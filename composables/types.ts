@@ -1,27 +1,20 @@
-export interface Robis {
-  Name: string;
-  X: number;
-  Z: number;
-  Dimension: string;
-}
-
 export interface Network {
   stations: Station[];
   bolts: Bolt[];
 }
 
-interface Station {
+export interface Station {
   name: string;
   description: string;
+  colour: string;
   x: number;
   z: number;
-  dimension: string;
-  color: string;
 }
 
-interface Bolt {
+export interface Bolt {
+  directed: boolean;
   station_a: Station;
   station_b: Station;
-  distance: number;
-  color: string;
+  length: number;
+  colour: string;
 }

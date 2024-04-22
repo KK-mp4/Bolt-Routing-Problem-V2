@@ -1,32 +1,52 @@
 <script setup lang="ts">
 // @ts-ignore: D3.js does not have declaration file
 import * as d3 from 'd3';
-import type { Robis } from '~~/composables/types';
+import type { Network, Station, Bolt } from '~~/composables/types';
 
 useHead({ title: "Bolt Routing Problem V2" })
 
 const user_msg = ref('');
-const stations = ref<Robis[]>([]);  // Array of all the stations
-// let startPoint = null;
-// let endPoint = null;
-// let line = null;
+const network = ref<Network>(<Network>{});  // Object containing stations and bolts
+let startStation: Station = <Station>{};
+let endPoint = null;
+let line = null;
 
 onMounted(async () => {
-  const response = await fetch('/data/stations.json');
-  const data: Robis[] = await response.json();
-  data.forEach(station => {
-    if (station.Dimension === "OW") {
-      station.X = Math.round(station.X / 8);
-      station.Z = Math.round(station.Z / 8);
-    }
-  });
+  const response = await fetch('/data/network.json');
+  const data: Network = await response.json();
 
-  stations.value = data;
+  data.bolts[0] = {
+    directed: false,
+    station_a: data.stations[17],
+    station_b: data.stations[18],
+    length: 0,
+    colour: "#8f7f10"
+  };
+
+  data.bolts[1] = {
+    directed: false,
+    station_a: data.stations[17],
+    station_b: data.stations[19],
+    length: 0,
+    colour: "#8f7f10"
+  };
+
+  data.bolts[2] = {
+    directed: false,
+    station_a: data.stations[13],
+    station_b: data.stations[17],
+    length: 0,
+    colour: "#8f7f10"
+  };
+
+  // console.log(data);
+  network.value = data;
+
   updateMap();
 });
 
 function updateMap() {
-  // Clear old chart when 'plot' is clicked
+  // Clear old SVG when 'network_map' is clicked
   let network_map = document.getElementById('network_map');
   if (network_map !== null) {
     network_map.innerHTML = '';
@@ -42,12 +62,12 @@ function updateMap() {
 
   // Y position
   const yScale = d3.scaleLinear()
-                  .domain(d3.extent(stations.value, (d: Robis) => d.Z))
-                  .range([chart_dy, margin.top]);
+                  .domain(d3.extent(network.value.stations, (d: Station) => d.z))
+                  .range([margin.top, chart_dy]);
   
   // X position
   const xScale = d3.scaleLinear()
-                  .domain(d3.extent(stations.value, (d: Robis) => d.X))
+                  .domain(d3.extent(network.value.stations, (d: Station) => d.x))
                   .range([margin.right, chart_dx]);
 
   // Y-axis
@@ -63,25 +83,10 @@ function updateMap() {
                 .attr("height", svg_dy);
   svg.call(d3.zoom().on("zoom", zoom));
 
-  // Plot stations
-  const circles = svg.append("g")
-                    .attr("id", "circles")
-                    .attr("transform", "translate(75, 0)")
-                    .attr("clip-path", "url(#clip)")
-                    .selectAll("circle")
-                    .data(stations.value)
-                    .enter()
-                    .append("circle")
-                    .attr("r", 4)
-                    .attr("cx", (d: Robis) => xScale(d.X))
-                    .attr("cy", (d: Robis) => yScale(-d.Z))
-                    .style("fill", "#f2a788")
-                    .on("click", (event: PointerEvent, d: Robis) => handleLClick(d));
-
   // Add y-axis
   svg.append("g")
       .attr("id", "y_axis")
-      .attr("transform", "translate(75,0)")
+      .attr("transform", "translate(75, 0)")
       .call(yAxis)
       .style("font-family", "Fira Code")
       .style("font-size", "10px");
@@ -100,6 +105,64 @@ function updateMap() {
 
   svg.selectAll(".tick line").style("stroke", "#422B25");
 
+  // Plot bolts
+  const edges_a = svg.append("g")
+                  .attr("id", "edges_a")
+                  .attr("transform", "translate(75, 0)")
+                  .attr("clip-path", "url(#clip)")
+                  .selectAll("line")
+                  .data(network.value.bolts)
+                  .enter()
+                  .append("line")
+                  .attr("x1", (d: Bolt) => xScale(d.station_a.x))
+                  .attr("y1", (d: Bolt) => yScale(d.station_a.z))
+                  .attr("x2", (d: Bolt) => xScale(calculateTurn(d.station_a, d.station_b).x))
+                  .attr("y2", (d: Bolt) => yScale(calculateTurn(d.station_a, d.station_b).z))
+                  .style("stroke", (d: Bolt) => d.colour)
+                  .style("stroke-width", 1);
+
+  const edges_b = svg.append("g")
+                  .attr("id", "edges_b")
+                  .attr("transform", "translate(75, 0)")
+                  .attr("clip-path", "url(#clip)")
+                  .selectAll("line")
+                  .data(network.value.bolts)
+                  .enter()
+                  .append("line")
+                  .attr("x1", (d: Bolt) => xScale(calculateTurn(d.station_a, d.station_b).x))
+                  .attr("y1", (d: Bolt) => yScale(calculateTurn(d.station_a, d.station_b).z))
+                  .attr("x2", (d: Bolt) => xScale(d.station_b.x))
+                  .attr("y2", (d: Bolt) => yScale(d.station_b.z))
+                  .style("stroke", (d: Bolt) => d.colour)
+                  .style("stroke-width", 1);
+
+  // Plot stations
+  const vertices = svg.append("g")
+                    .attr("id", "vertices")
+                    .attr("transform", "translate(75, 0)")
+                    .attr("clip-path", "url(#clip)")
+                    .selectAll("circle")
+                    .data(network.value.stations)
+                    .enter()
+                    .append("circle")
+                    .attr("r", 4)
+                    .attr("cx", (d: Station) => xScale(d.x))
+                    .attr("cy", (d: Station) => yScale(d.z))
+                    .style("fill", (d: Station) => d.colour)
+                    .on("click", (event: PointerEvent, d: Station) => handleLClick(d))
+                    .on("mousedown", (event: MouseEvent, d: Station) => {
+                      if (event.button === 1) { // Check if the middle mouse button is clicked
+                          handleMiddleClick(event, d);
+                      }
+                    })
+                  .on("mouseup", (event: MouseEvent, d: Station) => {
+                      if (event.button === 1) { // Check if the middle mouse button is clicked
+                          handleMiddleRelease(event, d);
+                      }
+                  });
+
+
+
   //   // Event listener for middle mouse button press
   //   svg.on("mousedown", (event) => {
   //   if (event.button === 1) { // Middle mouse button
@@ -107,11 +170,12 @@ function updateMap() {
   //   }
   // });
 
-  // // Event listener for mouse movement
-  // svg.on("mousemove", (event) => {
-  //   if (startPoint) {
+  // Event listener for mouse movement
+  // svg.on("mousemove", (event: MouseEvent) => {
+  //   if (startStation.name !== undefined) {
   //     endPoint = [event.offsetX, event.offsetY];
-  //     drawTempLine(svg, startPoint, endPoint);
+  //     drawTempLine(svg, startStation, endPoint);
+  //     console.log(startStation.x)
   //   }
   // });
 
@@ -138,7 +202,7 @@ function updateMap() {
       .duration(50)
       .call(xAxis.scale(transform.rescaleX(xScale)));
 
-    // Re-draw circles using new scales
+    // Re-draw vertices using new scales
     const new_xScale = transform.rescaleX(xScale);
     const new_yScale = transform.rescaleY(yScale);
 
@@ -149,44 +213,68 @@ function updateMap() {
     svg.selectAll(".tick line")
     .style("stroke", "#422B25");
 
-    circles.data(stations.value)
-      .attr('cx', (d: Robis) => new_xScale(d.X))
-      .attr('cy', (d: Robis) => new_yScale(-d.Z));               
+    vertices.data(network.value.stations)
+      .attr('cx', (d: Station) => new_xScale(d.x))
+      .attr('cy', (d: Station) => new_yScale(d.z));
+      
+    // Re-draw edges using new scales
+    edges_a.data(network.value.bolts)
+        .attr("x1", (d: Bolt) => new_xScale(d.station_a.x))
+        .attr("y1", (d: Bolt) => new_yScale(d.station_a.z))
+        .attr("x2", (d: Bolt) => new_xScale(calculateTurn(d.station_a, d.station_b).x))
+        .attr("y2", (d: Bolt) => new_yScale(calculateTurn(d.station_a, d.station_b).z));
+
+    edges_b.data(network.value.bolts)
+        .attr("x1", (d: Bolt) => new_xScale(calculateTurn(d.station_a, d.station_b).x))
+        .attr("y1", (d: Bolt) => new_yScale(calculateTurn(d.station_a, d.station_b).z))
+        .attr("x2", (d: Bolt) => new_xScale(d.station_b.x))
+        .attr("y2", (d: Bolt) => new_yScale(d.station_b.z));
   }
 
-  function handleLClick(station: Robis) {
+  function handleLClick(station: Station) {
     // Output the name of the clicked point
-    user_msg.value = station.Name + " { X: " + station.X + " , Z: " + station.Z + " }";
+    user_msg.value = station.name + " { X: " + station.x + " , Z: " + station.z + " }";
   }
 
-  // function drawTempLine(svg, start, end) {
+  function handleMiddleClick(e: MouseEvent, station: Station) {
+    startStation = station;
+    user_msg.value = "Start station";
+  }
+
+  function handleMiddleRelease(e: MouseEvent, station: Station) {
+    if (station.name === startStation.name) return;
+    network.value.bolts.push({
+      directed: false,
+      station_a: startStation,
+      station_b: station,
+      length: chebyshevDistance(startStation, station),
+      colour: "#8f7f10"
+    });
+
+    updateMap();
+    user_msg.value = "End station";
+  }
+
+  // function drawTempLine(svg, startStation: Station, end) {
   //   svg.select(".temp-line").remove();
   //   svg.append("line")
   //     .attr("class", "temp-line")
-  //     .attr("x1", start[0])
-  //     .attr("y1", start[1])
+  //     .attr("x1", startStation.x)
+  //     .attr("y1", startStation.z)
   //     .attr("x2", end[0])
   //     .attr("y2", end[1])
   //     .style("stroke", "gray")
   //     .style("stroke-width", 2)
   //     .style("stroke-dasharray", "5 5");
   // }
-
-  // function drawLine(svg, start, end) {
-  //   svg.select(".temp-line").remove();
-  //   svg.append("line")
-  //     .attr("x1", start[0])
-  //     .attr("y1", start[1])
-  //     .attr("x2", end[0])
-  //     .attr("y2", end[1])
-  //     .style("stroke", "#8f7f10")
-  //     .style("stroke-width", 2);
-  // }
 }
 </script>
 <template>
-  <div class="fixed top-0 right-0 w-48 backdrop-blur p-5 text-center">
-    <p>Piston Bolt Network Builder</p>
+  <div class="fixed top-0 right-0 w-48 backdrop-blur p-5">
+    <p class="text-center mb-3">Piston Bolt Network Builder</p>
+    <p class="text-xs">pan: drag mouse1</p>
+    <p class="text-xs">zoom: scroll mouse3</p>
+    <p class="text-xs">connect: drag mouse3</p>
   </div>
   <p class="fixed bottom-0 left-0 text-s,">{{ user_msg }}</p>
   <div id="network_map" class="p-0 h-full w-full"></div>
