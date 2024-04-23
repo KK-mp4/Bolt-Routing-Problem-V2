@@ -9,8 +9,11 @@ const user_msg = ref(''); // Message that is displayed at the bottom left corner
 const network = ref<Network>(<Network>{});  // Object containing stations and bolts
 let startStation: Station = <Station>{};  // Starting station for manual connection
 let endPoint: number[] = [];  // Ending station x, z
-let middleButtonPressed = false;
-let totalDistance = ref(0);
+let middleButtonPressed = false;  // Toggle to detect if user is dragging mouse3
+let totalBoltLength = ref(0);
+let totalTunnelLength = ref(0);
+const graphType = ref("None");  // select variable that stores graph type
+const mergePos = ref("median"); // param for Star graph
 
 onMounted(async () => {
   const response = await fetch('/data/network.json');
@@ -22,7 +25,7 @@ onMounted(async () => {
 
   updateMap();
 
-  totalDistance.value = calculateTotalDist(data);
+  [totalBoltLength.value, totalTunnelLength.value] = calculateTotalDist(data);
 });
 
 function updateMap() {
@@ -42,12 +45,12 @@ function updateMap() {
 
   // Y position
   const yScale = d3.scaleLinear()
-                  .domain(d3.extent(network.value.stations, (d: Station) => d.z))
+                  .domain(d3.extent(network.value.stations, (d: Station) => d.z * 1.01))
                   .range([margin.top, chart_dy]);
   
   // X position
   const xScale = d3.scaleLinear()
-                  .domain(d3.extent(network.value.stations, (d: Station) => d.x))
+                  .domain(d3.extent(network.value.stations, (d: Station) => d.x * 1.01))
                   .range([margin.right, chart_dx]);
 
   // Y-axis
@@ -227,7 +230,7 @@ function updateMap() {
     });
 
     updateMap();
-    totalDistance.value = calculateTotalDist(network.value);
+    [totalBoltLength.value, totalTunnelLength.value] = calculateTotalDist(network.value);
     user_msg.value += " to " + station.name;
   }
 
@@ -279,23 +282,95 @@ function updateMap() {
       .style("stroke-dasharray", "5 5");
   }
 }
+
+function onGraphChange() {
+  const start = Date.now();
+
+  switch(graphType.value) {
+    case "None": {
+      network.value.bolts = [];
+      break;
+    }
+
+    case "Star Graph": {
+      network.value = generateStarGraph(network.value, mergePos.value);
+      break;
+    }
+
+    case "Complete Graph": {
+      network.value = generateCompleteGraph(network.value);
+      break;
+    }
+
+    case "NN": {
+      network.value = generateNNGraph(network.value);
+      break;
+    }
+
+    case "Hamiltonian Cycle": {
+      network.value = generateLoopGraph(network.value);
+      break;
+    }
+
+    // case "Rectilinear Steiner Tree": {
+    //   network.value = generateSteinerTreeGraph(network.value);
+    //   break;
+    // }
+
+    default: {
+      return;
+    }
+  }
+
+  user_msg.value = "Processing time: " + (Date.now() - start) + "ms";
+
+  updateMap();
+  [totalBoltLength.value, totalTunnelLength.value] = calculateTotalDist(network.value);
+}
+
+function downloadJson() {
+  navigator.clipboard.writeText(JSON.stringify(network.value, null, 4));
+}
 </script>
 <template>
   <div class="fixed top-0 right-0 w-48 backdrop-blur p-5">
-    <p class="text-center mb-3">Piston Bolt Network Builder</p>
-    <p class="text-xs">pan: drag mouse1</p>
-    <p class="text-xs">zoom: scroll mouse3</p>
-    <p class="text-xs">connect: drag mouse3</p>
+    <!-- <p class="text-center">Piston Bolt Network Builder</p> -->
+    <p class="text-center"><a href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip" target="_blank" rel="noopener noreferrer" title="GitHub">Piston Bolt Network Builder</a></p>
+
+    <select v-model="graphType" class="mt-3 border border-text bg-primary text-background w-full font-bold outline-none select-none selection:bg-background" @change="onGraphChange">
+      <option value="None">None</option>
+      <option class="text-[0px] bg-text" disabled>&nbsp;</option>
+      <option value="Star Graph">Star Graph (WIP)</option>
+      <option value="Complete Graph">Complete Graph</option>
+      <option value="NN">MST Nearest Neighbour (WIP)</option>
+      <option value="Hamiltonian Cycle">Hamiltonian Cycle (WIP)</option>
+      <!-- <option value="Rectilinear Steiner Tree">Rectilinear Steiner Tree (WIP)</option> -->
+    </select>
+
+    <select v-if="graphType === 'Star Graph'" v-model="mergePos" class="mt-3 border border-text bg-primary text-background w-full font-bold outline-none select-none selection:bg-background" @change="onGraphChange">
+      <option value="median">Median</option>
+      <option value="average">Average</option>
+      <option value="">0, 0</option>
+      <option value="spawn">Spawn</option>
+    </select>
+
+    <button @click="downloadJson" class="mt-3">Copy graph JSON</button>
+
   </div>
 
-  <p class="fixed bottom-0 left-0 text-s,">{{ user_msg }}</p>
+  <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
 
   <div class="fixed top-0 left-0 backdrop-blur p-5">
     <p class="text-xs">Stations:<br />
       <span v-if="network.stations" class="text-accent">{{ network.stations.length }}</span>
       <span v-else class="text-accent">0</span>
     </p>
-    <p class="text-xs mt-1">Total length:<br /><span class="text-accent">{{ totalDistance }} blocks</span></p>
+    <p class="text-xs mt-1">Bolt length:<br /><span class="text-accent">{{ totalBoltLength }} blocks</span></p>
+    <p class="text-xs mt-1">Tunnel length:<br /><span class="text-accent">{{ totalTunnelLength }} blocks</span></p>
+  </div>
+
+  <div class="fixed bottom-0 right-0 text-[10px] select-none">
+    <p>pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3</p>
   </div>
 
   <div id="network_map" class="p-0 h-full w-full"></div>

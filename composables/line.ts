@@ -34,11 +34,14 @@ export function chebyshevDistanceSlow(station_a: Station, station_b: Station): n
   return difference_x >= difference_z ? difference_x : difference_z;
 }
 
-export function calculateTotalDist(network: Network): number {
-  let total = 0;
+export function calculateTotalDist(network: Network): number[] {
+  let totalBolt = 0;
+  let totalTunnel = 0;
   network.bolts.forEach( bolt => {
-    total += bolt.length;
-    if (bolt.directed === false) total += bolt.length;
+    totalTunnel += bolt.length;
+    if (bolt.directed === false) totalBolt += bolt.length;
   })
-  return total;
+  
+  totalBolt += totalTunnel;
+  return [totalBolt, totalTunnel];
 }
