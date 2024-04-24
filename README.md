@@ -11,6 +11,16 @@ When you already know where the stations will be, it comes down to [multi-object
 <i>Piston bolt network of Dugged</i>
 </p>
 
+## Sections
+[Problem domain](#problem-domain)  
+[Star graph](#1-star-graph)  
+[Complete graph](#2-complete-graph)  
+[Minimum spanning tree (MST)](#3-minimum-spanning-tree-mst)  
+[Steiner tree](#4-steiner-tree)  
+[Distance matrix heatmap](#distance-matrix-heatmap)  
+[Pareto front](#pareto-front)  
+[How to use](#how-to-use)
+
 ## Problem Domain
 Generalizing and looking outside the Minecraft, this problem comes down to finding an optimal interconnect for a given set of vertices (stations) on a 2 dimensional [Chebyshev metric space](https://en.wikipedia.org/wiki/Chebyshev_distance).
 The solution to the problem is a weighted directed/undirected graph. Weight will be Chebyshev distance between vertices (stations) and directionality would come down to the fact that the graph has loops or not. For example, [Hamiltonian path] can be directed, since in theory a player can get to any station from any station just by traveling in one direction.
@@ -38,8 +48,30 @@ NN is a quick approximation to finding out true MST. The graph this algorithm pr
 
 ![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/f10fad70-08cb-4e3d-bbe0-d6f361756683)
 
-### 4. Rectilinear Steiner tree
-[Rectilinear Steiner tree](https://en.wikipedia.org/wiki/Rectilinear_Steiner_tree) is a variant of the geometric [Steiner tree problem](https://en.wikipedia.org/wiki/Steiner_tree_problem) in the plane, in which the Euclidean distance is replaced with the rectilinear distance.
+### 3.3. Prim's algorithm
+[Prim's algorithm](https://en.wikipedia.org/wiki/Prim%27s_algorithm) is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph.  
+
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/61dcbf36-8ba8-47c1-b24c-9744256e47b1)
+
+### 4. Steiner tree
+[Steiner tree problem](https://en.wikipedia.org/wiki/Steiner_tree_problem) consists of finding the minimum tree that includes specific points and, if necessary, uses a number
+of auxiliary points to minimize the tree length (unlike MST). This problem is NP-hard, however [heuristic solution](https://www.textroad.com/pdf/JBASR/J.%20Basic.%20Appl.%20Sci.%20Res.,%203(1s)611-613,%202013.pdf) exists.
+
+#### 4.1. Rectilinear Steiner tree
+[Rectilinear Steiner tree](https://en.wikipedia.org/wiki/Rectilinear_Steiner_tree) is a variant of the geometric Steiner tree problem in the plane, in which the Euclidean distance is replaced with the rectilinear distance.
+
+## Distance matrix heatmap
+To calculate average travel time in a given network I use [Floyd-Warshall algorithm](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm) that generates this matrix of shortest path between any set of points.  
+
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/d840681b-6312-49e1-83df-7851ac58fd07)
+
+## Pareto front
+To choose a network that best suits your needs, there is a page with scatter plot and Pareto front.  
+
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/ceb521aa-5f25-454d-9c8f-c5dad2ff59ce)
+
+## How to use
+This section is work in progress.
 
 ## License
 This program is licensed under the MIT License. Please read the License file to know about the usage terms and conditions.
