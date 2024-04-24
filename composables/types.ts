@@ -28,3 +28,9 @@ export interface Bolt {
   length: number;
   colour: string;
 }
+
+export interface PlotData {
+  graph_name: string;
+  length: number;
+  time: number;
+}
