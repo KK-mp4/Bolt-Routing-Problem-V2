@@ -13,7 +13,9 @@ onMounted(() => {
     { graph_name: "MST nearest neighbour", length: 12560, time: 154.42 },
     { graph_name: "Hamiltonian cycle", length: 14328, time: 126 },
     { graph_name: "Prim's algorithm", length: 8949, time: 71.57 },
-    { graph_name: "Prim's algorithm with loop", length: 9887, time: 61.72 }
+    // { graph_name: "Prim's algorithm", length: 8899, time: 77.05 },
+    { graph_name: "Prim's algorithm with loop", length: 9887, time: 61.72 },
+    { graph_name: "Kruskal's algorithm", length: 8949, time: 71.71 }
   ]
 
   drawPlot(plotData);

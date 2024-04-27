@@ -40,4 +40,19 @@ body {
   src: url('/FiraCode-VariableFont_wght.ttf') format('truetype');
   font-weight: 400;
 }
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #F2A788;
+  outline: 1px solid #49291E;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
 </style>

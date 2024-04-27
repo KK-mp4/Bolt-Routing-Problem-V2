@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // @ts-ignore: D3.js is missing declaration file
 import * as d3 from 'd3';
+import { useLocalStorage } from '@vueuse/core';
 
-useHead({ title: "Bolt Routing Problem V2" })
+useHead({ title: "Bolt Routing Problem V2" });
 
 const user_msg = ref(''); // Message that is displayed at the bottom left corner of the screen
 const network = ref<Network>(<Network>{});  // Object containing stations and bolts
@@ -12,9 +13,17 @@ let middleButtonPressed = false;  // Toggle to detect if user is dragging mouse3
 const totalBoltLength = ref(0);
 const totalTunnelLength = ref(0);
 const averageTravelTime = ref(0);
-const graphType = ref("None");  // select variable that stores graph type
-const starGraphS = ref(8);
-const mergePos = ref("median"); // param for Star graph
+// const graphType = ref("None");  // select variable that stores graph type
+const graphType = useLocalStorage('graph-type', "None");  // select variable that stores graph type
+// const starGraphS = ref(8);  // Amount of star rays
+const starGraphS = useLocalStorage('star-graph-s', 8);  // Amount of star rays
+// const starGraphMergePos = ref("median"); // Star graph merging point
+const starGraphMergePos = useLocalStorage('star-graph-merge-pos', "median"); // Star graph merging point
+
+// Settings
+const showLables = useLocalStorage('show-lables', false);
+const colourGraph = useLocalStorage('colour-graph', false);
+const calcStats = useLocalStorage('calculate-stats', true);
 
 onMounted(async () => {
   const response = await fetch('/data/network.json');
@@ -24,8 +33,9 @@ onMounted(async () => {
   // console.log(JSON.stringify(data, null, 4));
   network.value = data;
 
-  updateMap();
-  updateData();
+  // updateMap();
+  // updateData();
+  onGraphChange();
 });
 
 function updateMap() {
@@ -142,8 +152,26 @@ function updateMap() {
         }
     });
 
+
+
+  // Station lables
+  const lables = svg.append("g")
+    .attr("id", "lables")
+    .style("font-family", "Fira Code")
+    .style("fill", "#fbdfd8")
+    .style("font-size", "10px")
+    .selectAll("text")
+    .data(network.value.stations)
+    .join("text")
+    .attr("dy", "0.35em")
+    .attr("x", (d: Station) => xScale(d.x))
+    .attr("y", (d: Station) => yScale(d.z) - 14)
+    .text((d: Station) => d.name);
+
+
+
   svg.on("mousemove", (event: MouseEvent) => {
-    if (graphType.value === "Star graph" && mergePos.value === "track") {
+    if (graphType.value === "Star graph" && starGraphMergePos.value === "track") {
       // Get the SVG element
       const svgElement = svg.node();
 
@@ -158,7 +186,7 @@ function updateMap() {
       const svgEndX = svgCursorPoint.x - margin.left;
       const svgEndY = svgCursorPoint.y - margin.top;
 
-      network.value = generateStarGraph(network.value, starGraphS.value, mergePos.value, Math.round(xScale.invert(svgEndX)), Math.round(yScale.invert(svgEndY)));
+      network.value = generateStarGraph(network.value, starGraphS.value, starGraphMergePos.value, Math.round(xScale.invert(svgEndX)), Math.round(yScale.invert(svgEndY)));
       updateMap();
       updateData();
     }
@@ -212,7 +240,16 @@ function updateMap() {
     vertices.data(network.value.stations)
       .attr('cx', (d: Station) => new_xScale(d.x))
       .attr('cy', (d: Station) => new_yScale(d.z));
+
+
+
+    lables.data(network.value.stations)
+      .attr('x', (d: Station) => new_xScale(d.x))
+      .attr('y', (d: Station) => new_yScale(d.z) - 14);
+
       
+
+
     // Re-draw edges using new scales
     edges_a.data(network.value.bolts)
         .attr("x1", (d: Bolt) => new_xScale(d.station_a.x))
@@ -321,12 +358,12 @@ function onGraphChange() {
 
   switch(graphType.value) {
     case "None": {
-      network.value.bolts = [];
+      // network.value.bolts = [];
       break;
     }
 
     case "Star graph": {
-      network.value = generateStarGraph(network.value, starGraphS.value, mergePos.value);
+      network.value = generateStarGraph(network.value, starGraphS.value, starGraphMergePos.value);
       break;
     }
 
@@ -350,6 +387,11 @@ function onGraphChange() {
       break;
     }
 
+    case "Kruskal's algorithm": {
+      network.value = runKruskalsAlgotithm(generateCompleteGraph(network.value));
+      break;
+    }
+
     default: {
       return;
     }
@@ -363,20 +405,20 @@ function onGraphChange() {
 
 function updateData() {
   [totalBoltLength.value, totalTunnelLength.value] = calculateTotalDist(network.value);
-  averageTravelTime.value = calculateAverageTravelTime(network.value);
-}
-
-function downloadJson() {
-  navigator.clipboard.writeText(JSON.stringify(network.value, null, 4));
+  if (calcStats.value) {
+    averageTravelTime.value = calculateAverageTravelTime(network.value);
+  }
 }
 </script>
 <template>
   <div class="fixed top-0 right-0 w-48 backdrop-blur p-5">
 
-    <p class="text-center">
-      <a href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip" target="_blank" rel="noopener noreferrer" title="GitHub">
+    <p class="text-center text-accent">
+      <a href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip"
+        target="_blank" rel="noopener noreferrer" title="GitHub">
         Piston Bolt Network Builder
       </a>
+      <span class="text-[10px] text-text">*early alpha build by kk</span>
     </p>
 
     <BaseSelect v-model="graphType" @change="onGraphChange">
@@ -387,7 +429,7 @@ function downloadJson() {
       <option value="Hamiltonian cycle">Hamiltonian cycle (WIP)</option>
       <!-- <option value="Boruvka's algorithm">Boruvka's algorithm (WIP)</option> -->
       <option value="Prim's algorithm">Prim's algorithm (WIP)</option>
-      <!-- <option value="Kruskals algorithm">Kruskal's algorithm (WIP)</option> -->
+      <option value="Kruskal's algorithm">Kruskal's algorithm (WIP)</option>
       <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
       <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
       <!-- <option value="Euclidean Steiner tree">Euclidean Steiner tree (WIP)</option> -->
@@ -399,7 +441,7 @@ function downloadJson() {
         <option value=4>S<sub>4</sub></option>
         <option value=8>S<sub>8</sub></option>
       </BaseSelect>
-      <BaseSelect v-model="mergePos" @change="onGraphChange">
+      <BaseSelect v-model="starGraphMergePos" @change="onGraphChange">
         <option value="median">Median</option>
         <option value="average">Average</option>
         <option value="">0, 0</option>
@@ -407,9 +449,6 @@ function downloadJson() {
         <option value="track">Track mouse</option>
       </BaseSelect>
     </div>
-
-    <button @click="downloadJson" class="mt-3">Copy graph JSON</button>
-
   </div>
 
   <div class="fixed top-0 left-0 backdrop-blur p-5 pb-1">
@@ -419,8 +458,11 @@ function downloadJson() {
     </p>
     <p class="text-xs mt-1">Bolt length:<br /><span class="text-accent">{{ totalBoltLength }} blocks</span></p>
     <p class="text-xs mt-1">Tunnel length:<br /><span class="text-accent">{{ totalTunnelLength }} blocks</span></p>
-    <p class="text-xs mt-1">Average travel time:<br /><span class="text-accent">{{ Math.round(averageTravelTime * 100) / 100 }} s</span></p>
-    <NuxtLink to="/heatmap" title="Distance matrix heatmap" class="text-xs">Heatmap -></NuxtLink><br />
+    <p v-if="calcStats" class="text-xs mt-1 mb-2">Average travel time:<br /><span class="text-accent">{{ Math.round(averageTravelTime *
+      100) / 100 }} s</span></p>
+
+    <NuxtLink to="/settings" title="Setting page" class="text-xs">Settings -><br /></NuxtLink>
+    <NuxtLink v-if="calcStats" to="/heatmap" title="Distance matrix heatmap" class="text-xs">Heatmap -><br /></NuxtLink>
     <NuxtLink to="/scatterplot" title="Scatter plot" class="text-xs">Scatter plot -></NuxtLink>
   </div>
 
