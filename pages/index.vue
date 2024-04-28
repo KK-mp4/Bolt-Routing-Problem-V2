@@ -6,7 +6,7 @@ import { useLocalStorage } from '@vueuse/core';
 useHead({ title: "Bolt Routing Problem V2" });
 
 const user_msg = ref(''); // Message that is displayed at the bottom left corner of the screen
-const network = ref<Network>(<Network>{});  // Object containing stations and bolts
+const network = useLocalStorage('piston-bolt-network', {} as Network);  // Object containing stations and bolts
 let startStation: Station = <Station>{};  // Starting station for manual connection
 let endPoint: number[] = [];  // Ending station x, z
 let middleButtonPressed = false;  // Toggle to detect if user is dragging mouse3
@@ -21,20 +21,19 @@ const starGraphS = useLocalStorage('star-graph-s', 8);  // Amount of star rays
 const starGraphMergePos = useLocalStorage('star-graph-merge-pos', "median"); // Star graph merging point
 
 // Settings
-const showLables = useLocalStorage('show-lables', false);
+const showLabels = useLocalStorage('show-labels', false);
 const colourGraph = useLocalStorage('colour-graph', false);
 const calcStats = useLocalStorage('calculate-stats', true);
 
 onMounted(async () => {
-  const response = await fetch('/data/network.json');
-  const data: Network = await response.json();
+  window.addEventListener('resize', updateMap);
+  
+  if (!network.value.stations) {
+    const response = await fetch('/data/network.json');
+    const data: Network = await response.json();
+    network.value = data;
+  }
 
-  // console.log(data);
-  // console.log(JSON.stringify(data, null, 4));
-  network.value = data;
-
-  // updateMap();
-  // updateData();
   onGraphChange();
 });
 
@@ -51,16 +50,36 @@ function updateMap() {
   const svg_dy = window.innerHeight;
   const chart_dx = svg_dx - margin.right - margin.left;
   const chart_dy = svg_dy - margin.top - margin.bottom;
-  const numTicks = Math.round(Math.min(chart_dx, chart_dy) / 64);
+
+
+  // Finding the maximum absolute range of both x and z dimensions
+  const maxX = d3.max(network.value.stations, (d: Station) => Math.abs(d.x));
+  const maxY = d3.max(network.value.stations, (d: Station) => Math.abs(d.z));
+  const maxRange = Math.max(maxX, maxY) * 1.01; // 1% extra so that stations are not overlapping with axis
+
+  // Calculating the aspect ratio
+  const aspectRatio = chart_dx / chart_dy;
+
+  // Adjusting the ranges of both x-axis and y-axis based on the aspect ratio
+  let xRange, yRange;
+  if (aspectRatio > 1) {
+      // Landscape orientation
+      xRange = maxRange * aspectRatio;
+      yRange = maxRange;
+  } else {
+      // Portrait orientation or square
+      xRange = maxRange;
+      yRange = maxRange / aspectRatio;
+  }
 
   // Y position
   const yScale = d3.scaleLinear()
-    .domain(d3.extent(network.value.stations, (d: Station) => d.z * 1.01))
+    .domain([-yRange, yRange])
     .range([margin.top, chart_dy]);
   
   // X position
   const xScale = d3.scaleLinear()
-    .domain(d3.extent(network.value.stations, (d: Station) => d.x * 1.01))
+    .domain([-xRange, xRange])
     .range([margin.right, chart_dx]);
 
   // Y-axis
@@ -92,10 +111,14 @@ function updateMap() {
     .call(xAxis)
     .style("font-family", "Fira Code")
     .style("font-size", "10px");
+
+  // Calculating the number of ticks for both x-axis and y-axis
+  const numTicksX = Math.round(Math.min(chart_dx, chart_dy) / 64);
+  const numTicksY = Math.round(Math.min(chart_dx, chart_dy) / 64 * (chart_dy / chart_dx));
   
   // Add x and y grid lines
-  svg.select("#x_axis").call(xAxis.scale(xScale).ticks(numTicks).tickSize(-chart_dy));
-  svg.select("#y_axis").call(yAxis.scale(yScale).ticks(numTicks).tickSize(-chart_dx));
+  svg.select("#x_axis").call(xAxis.scale(xScale).ticks(numTicksX).tickSize(-chart_dy));
+  svg.select("#y_axis").call(yAxis.scale(yScale).ticks(numTicksY).tickSize(-chart_dx));
 
   svg.selectAll(".tick line").style("stroke", "#422B25");
 
@@ -152,8 +175,6 @@ function updateMap() {
         }
     });
 
-
-
   // Station lables
   const lables = svg.append("g")
     .attr("id", "lables")
@@ -166,9 +187,8 @@ function updateMap() {
     .attr("dy", "0.35em")
     .attr("x", (d: Station) => xScale(d.x))
     .attr("y", (d: Station) => yScale(d.z) - 14)
-    .text((d: Station) => d.name);
-
-
+    .text((d: Station) => d.name)
+    .style("visibility", showLabels.value ? "visible" : "hidden");
 
   svg.on("mousemove", (event: MouseEvent) => {
     if (graphType.value === "Star graph" && starGraphMergePos.value === "track") {
@@ -231,8 +251,8 @@ function updateMap() {
     const new_yScale = transform.rescaleY(yScale);
 
     // Re-scale axes and gridlines
-    svg.select("#x_axis").call(xAxis.scale(new_xScale).ticks(numTicks).tickSize(-chart_dy));
-    svg.select("#y_axis").call(yAxis.scale(new_yScale).ticks(numTicks).tickSize(-chart_dx));
+    svg.select("#x_axis").call(xAxis.scale(new_xScale).ticks(numTicksX).tickSize(-chart_dy));
+    svg.select("#y_axis").call(yAxis.scale(new_yScale).ticks(numTicksY).tickSize(-chart_dx));
 
     svg.selectAll(".tick line")
     .style("stroke", "#422B25");
@@ -241,14 +261,9 @@ function updateMap() {
       .attr('cx', (d: Station) => new_xScale(d.x))
       .attr('cy', (d: Station) => new_yScale(d.z));
 
-
-
     lables.data(network.value.stations)
       .attr('x', (d: Station) => new_xScale(d.x))
       .attr('y', (d: Station) => new_yScale(d.z) - 14);
-
-      
-
 
     // Re-draw edges using new scales
     edges_a.data(network.value.bolts)
@@ -409,12 +424,16 @@ function updateData() {
     averageTravelTime.value = calculateAverageTravelTime(network.value);
   }
 }
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateMap);
+});
 </script>
 <template>
   <div class="fixed top-0 right-0 w-48 backdrop-blur p-5">
 
     <p class="text-center text-accent">
-      <a href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip"
+      <a href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2"
         target="_blank" rel="noopener noreferrer" title="GitHub">
         Piston Bolt Network Builder
       </a>

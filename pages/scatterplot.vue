@@ -1,12 +1,14 @@
 <script setup lang="ts">
 // @ts-ignore: D3.js is missing declaration file
 import * as d3 from 'd3';
-useHead({ title: "Scatter plot" })
+import { useLocalStorage } from '@vueuse/core';
+useHead({ title: "Scatter plot" });
 
-const user_msg = ref('');
+const plotData = useLocalStorage('scatter-plot', {} as PlotData[]);
+const user_msg = ref("I update this manually for Dugged network for now.");
 
 onMounted(() => {
-  const plotData: PlotData[] = [
+  plotData.value = [
     { graph_name: "Current network* (not all stations connected)", length: 14590, time: 77.43 },
     { graph_name: "Star graph*", length: 56284, time: 56.04 },
     { graph_name: "Complete graph", length: 1012534, time: 44.88 },
@@ -18,7 +20,7 @@ onMounted(() => {
     { graph_name: "Kruskal's algorithm", length: 8949, time: 71.71 }
   ]
 
-  drawPlot(plotData);
+  drawPlot(plotData.value);
 });
 
 function drawPlot(plotData: PlotData[]) {

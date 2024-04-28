@@ -34,3 +34,8 @@ export interface PlotData {
   length: number;
   time: number;
 }
+
+export interface DistanceMatrix {
+  station_name: string;
+  values: number[];
+}
