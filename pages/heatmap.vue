@@ -2,7 +2,6 @@
 // @ts-ignore: D3.js is missing declaration file
 import * as d3 from 'd3';
 import { useLocalStorage } from '@vueuse/core';
-import type { DistanceMatrix } from '~/composables/types';
 useHead({ title: "Distance matrix heatmap" });
 
 const distanceMatrix = useLocalStorage('distance-matrix', {} as DistanceMatrix[]);

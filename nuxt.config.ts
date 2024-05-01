@@ -11,8 +11,5 @@ export default defineNuxtConfig({
     exposeConfig: false,
     config: {},
     viewer: true
-  },
-  app: {
-    baseURL: "/Bolt-Routing-Problem-V2/"
   }
 })
