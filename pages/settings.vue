@@ -140,7 +140,7 @@ function convertPlotDataToCSV(data: PlotData[]) {
 </script>
 <template>
   <div class="flex">
-    <div class="w-[40vw] flex flex-col">
+    <div class="min-w-[520px] w-[520px] flex flex-col">
       <NuxtLink to="/" title="Go back to main page" class="fixed top-3 left-3 text-xs">← Back</NuxtLink>
       <div class="p-5 my-auto flex flex-col">
         <a class="underline cursor-pointer text-xl text-primary mb-7 font-extrabold" href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip"
@@ -155,6 +155,7 @@ function convertPlotDataToCSV(data: PlotData[]) {
 
         <BaseButton @click="triggerFileInput">Import network<Icon class="ml-3 my-auto" name="bi:filetype-json" size="16px" /></BaseButton>
         <input type="file" ref="fileInput" style="display: none" @change="importNetwork">
+        <BaseButton @click="network = { stations: [], bolts: [] }">Clear network</BaseButton>
         <div class="w-full h-0 border border-primary mb-7"></div>
 
         <BaseButton @click="exportNetwork">Export network<Icon class="ml-3 my-auto" name="bi:filetype-json" size="16px" /></BaseButton>
@@ -163,7 +164,7 @@ function convertPlotDataToCSV(data: PlotData[]) {
       </div>
       <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
     </div>
-    <div class="w-[60vw] h-screen">
+    <div class="flex-1 h-screen">
       <TheTable v-if="network.stations" :stations="network.stations" />
     </div>
   </div>

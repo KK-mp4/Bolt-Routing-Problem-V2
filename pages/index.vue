@@ -13,12 +13,11 @@ let middleButtonPressed = false;  // Toggle to detect if user is dragging mouse3
 const totalBoltLength = ref(0);
 const totalTunnelLength = ref(0);
 const averageTravelTime = ref(0);
-// const graphType = ref("None");  // select variable that stores graph type
-const graphType = useLocalStorage('graph-type', "None");  // select variable that stores graph type
-// const starGraphS = ref(8);  // Amount of star rays
+const graphType = useLocalStorage('graph-type', '');  // select variable that stores graph type
 const starGraphS = useLocalStorage('star-graph-s', 8);  // Amount of star rays
-// const starGraphMergePos = ref("median"); // Star graph merging point
 const starGraphMergePos = useLocalStorage('star-graph-merge-pos', "median"); // Star graph merging point
+
+let savedTransform = d3.zoomIdentity;
 
 // Settings
 const showLabels = useLocalStorage('show-labels', false);
@@ -27,7 +26,7 @@ const calcStats = useLocalStorage('calculate-stats', true);
 
 onMounted(async () => {
   window.addEventListener('resize', updateMap);
-  
+
   if (!network.value.stations) {
     const response = await fetch('/data/network.json');
     const data: Network = await response.json();
@@ -93,8 +92,6 @@ function updateMap() {
     .append("svg")
     .attr("width", svg_dx)
     .attr("height", svg_dy);
-
-  svg.call(d3.zoom().on("zoom", zoom));
 
   // Add y-axis
   svg.append("g")
@@ -166,13 +163,13 @@ function updateMap() {
     .on("click", (event: PointerEvent, d: Station) => handleLClick(d))
     .on("mousedown", (event: MouseEvent, d: Station) => {
       if (event.button === 1) { // Check if the middle mouse button is clicked
-          handleMiddleClick(event, d);
+        handleMiddleClick(event, d);
       }
     })
     .on("mouseup", (event: MouseEvent, d: Station) => {
-        if (event.button === 1) { // Check if the middle mouse button is clicked
-            handleMiddleRelease(event, d);
-        }
+      if (event.button === 1) { // Check if the middle mouse button is clicked
+        handleMiddleRelease(event, d);
+      }
     });
 
   // Station lables
@@ -189,6 +186,17 @@ function updateMap() {
     .attr("y", (d: Station) => yScale(d.z) - 14)
     .text((d: Station) => d.name)
     .style("visibility", showLabels.value ? "visible" : "hidden");
+
+  // Create a zoom behavior
+  const zoomBehavior = d3.zoom().on("zoom", zoom);
+
+  // Call the zoom behavior on the SVG element
+  svg.call(zoomBehavior);
+
+  // Apply saved transform here if it exists
+  if (savedTransform !== undefined) {
+    svg.call(zoomBehavior.transform, savedTransform);
+  }
 
   svg.on("mousemove", (event: MouseEvent) => {
     if (graphType.value === "Star graph" && starGraphMergePos.value === "track") {
@@ -234,6 +242,8 @@ function updateMap() {
 
   // @ts-ignore: I don't know it's type c:
   function zoom({ transform }) {
+    savedTransform = transform; // Save the current transform
+
     // Re-scale y axis during zoom
     d3.select("#y_axis")
       .transition()
@@ -280,8 +290,8 @@ function updateMap() {
 
     if (startStation.name !== undefined) {
       // Calculate the new x and y coordinates of the startStation
-      startStation.x = new_xScale(startStation.x);
-      startStation.z = new_yScale(startStation.z);
+      // startStation.x = new_xScale(startStation.x);
+      // startStation.z = new_yScale(startStation.z);
     }
   }
 
@@ -328,7 +338,7 @@ function updateMap() {
 
     // Get the SVG coordinates of the mouse cursor relative to the SVG element
     const svgPoint = svgElement.createSVGPoint();
-    svgPoint.x = end[0];
+    svgPoint.x = end[0] + 1;
     svgPoint.y = end[1];
     const screenCTM = svgElement.getScreenCTM();
     const svgCursorPoint = svgPoint.matrixTransform(screenCTM.inverse());
@@ -373,7 +383,7 @@ function onGraphChange() {
 
   switch(graphType.value) {
     case "None": {
-      // network.value.bolts = [];
+      network.value.bolts = [];
       break;
     }
 
@@ -408,7 +418,7 @@ function onGraphChange() {
     }
 
     default: {
-      return;
+      break;
     }
   }
 

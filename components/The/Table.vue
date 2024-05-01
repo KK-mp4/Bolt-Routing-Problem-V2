@@ -2,9 +2,23 @@
 const props = defineProps<{
   stations: Station[];
 }>();
+
+const addNewStation = () => {
+  props.stations.push({
+    name: "New Station",
+    description: '',
+    colour: "#f2a788",
+    x: 0,
+    z: 0
+  });
+};
+
+const deleteStation = (index: number) => {
+  props.stations.splice(index, 1);
+};
 </script>
 <template>
-    <div class="w-full h-screen overflow-y-auto">
+  <div class="w-full h-screen overflow-y-auto">
     <table class="w-full text-sm text-left rtl:text-right">
       <thead class="text-xs bg-[#49291E]">
         <tr>
@@ -23,24 +37,37 @@ const props = defineProps<{
           <th scope="col" class="px-6 py-3">
             Z
           </th>
+          <th scope="col" class="">
+            
+          </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="station in props.stations" class="even:bg-[#49291E] odd:bg-background text-accent">
-          <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">
-            {{ station.name }}
-          </th>
+        <tr v-for="(station, index) in props.stations" :key="index" class="even:bg-[#49291E] odd:bg-background text-accent">
+          <td class="px-6 py-4 font-medium whitespace-nowrap">
+            <input v-model="station.name" class="w-full" style="background-color: transparent;" />
+          </td>
           <td class="px-6 py-4">
-            {{ station.description }}
+            <input v-model="station.description" class="w-full" style="background-color: transparent;" />
           </td>
           <td class="px-6 py-4" :style="{ color: station.colour }">
-            {{ station.colour }}
+            <input v-model="station.colour" class="w-full" style="background-color: transparent;" />
           </td>
           <td class="px-6 py-4">
-            {{ station.x }}
+            <input v-model.number="station.x" class="w-full" style="background-color: transparent;" />
           </td>
           <td class="px-6 py-4">
-            {{ station.z }}
+            <input v-model.number="station.z" class="w-full" style="background-color: transparent;" />
+          </td>
+          <td class="px-6 py-4">
+            <button @click="deleteStation(index)">
+              <Icon class="my-auto" name="octicon:trashcan" size="14px" />
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="5" class="px-6 py-4">
+            <BaseButton @click="addNewStation">Add</BaseButton>
           </td>
         </tr>
       </tbody>

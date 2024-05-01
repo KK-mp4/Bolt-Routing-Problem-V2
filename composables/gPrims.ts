@@ -1,5 +1,9 @@
+import { useLocalStorage } from '@vueuse/core';
+const plotData = useLocalStorage('scatter-plot', {} as PlotData[]);
+
 // Starts from each station and returns shortest path
 export function runPrimsAlgotithm2(network: Network): Network {
+  plotData.value = []
   const stations = network.stations;
   const numStations = stations.length;
 
@@ -62,6 +66,9 @@ export function runPrimsAlgotithm2(network: Network): Network {
       minDistance = totalDistance;
       minNetwork = { stations: stations.slice(), bolts: bolts };
     }
+
+    // Experimental feature to add everythign to Pareto front
+    plotData.value.push({ graph_name: "Prim's from " + network.stations[startIdx].name, length: totalDistance, time: calculateAverageTravelTime({ stations: stations.slice(), bolts: bolts }) });
   }
 
   if (minNetwork) {
