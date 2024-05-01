@@ -28,12 +28,12 @@ The solution to the problem is a weighted directed/undirected graph. Weight will
 ### 1. Star graph
 [Star graph](https://en.wikipedia.org/wiki/Star_(graph_theory)) is a type of [tree graph](https://en.wikipedia.org/wiki/Tree_(graph_theory)) with one internal node and *k* leaves. You can place the internal node at any arbitrary location, however median or average coordinates of all stations work the best.  
 
-![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/cafd0504-bc32-4558-bc9f-946d1cac2b6a)
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/4c2f0657-be05-4619-856a-cfe6bf1a7606)
 
 ### 2. Complete graph
 [Complete graph](https://en.wikipedia.org/wiki/Complete_graph) is an undirected graph in which every pair of distinct vertices is connected by a unique edge. This gives theoretically shortest amount of average travel time.  
 
-![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/31c771ea-c46a-41f4-9afc-1cbe52295f86)
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/ff3a3217-5e6c-4f72-aab1-ce4dc79c05a6)
 
 ### 3. Minimum spanning tree (MST)
 [MST](https://en.wikipedia.org/wiki/Minimum_spanning_tree) is a subset of the edges of a connected, weighted undirected graph that connects all the vertices together, without any cycles and with the minimum possible total edge weight.
@@ -41,24 +41,26 @@ The solution to the problem is a weighted directed/undirected graph. Weight will
 #### 3.1. Nearest neighbor (NN)
 NN is a quick approximation to finding out true MST. The graph this algorithm produces is directed and weighted. Worth mentioning that in the given set of points there are intersections between edges. My implementation is missing one optimization, when detecting line intersections -> switch end points of intersecting lines to get a new, smaller graph.  
 
-![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/7d8c11a6-ff8f-439e-8619-a79cef192ecd)
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/1cfd690a-7b1d-48f1-a1e8-f2e492b56e09)
 
 #### 3.2. Hamiltonian cycle
 [Hamiltonian path](https://en.wikipedia.org/wiki/Hamiltonian_path) is a [loop graph](https://en.wikipedia.org/wiki/Loop_(graph_theory)) that visits each vertex exactly once.  
 
-![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/f10fad70-08cb-4e3d-bbe0-d6f361756683)
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/7c97f92b-a88b-47ed-9342-f0928d02de15)
 
 ### 3.3. Prim's algorithm
 [Prim's algorithm](https://en.wikipedia.org/wiki/Prim%27s_algorithm) is a greedy algorithm that finds a minimum spanning tree for a weighted undirected graph.  
 
-![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/61dcbf36-8ba8-47c1-b24c-9744256e47b1)
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/21d6c402-c115-49cc-ac9d-d47fac18cc70)
+
+### 3.4 Kruskal's algorithm
+[Kruskal's algorithm](https://en.wikipedia.org/wiki/Kruskal%27s_algorithm) finds MST of an undirected edge-weighted graph.  
+
+![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/33d08fa8-5d3b-4b28-8ec1-64ad3c8a6939)
 
 ### 4. Steiner tree
 [Steiner tree problem](https://en.wikipedia.org/wiki/Steiner_tree_problem) consists of finding the minimum tree that includes specific points and, if necessary, uses a number
 of auxiliary points to minimize the tree length (unlike MST). This problem is NP-hard, however [heuristic solution](https://www.textroad.com/pdf/JBASR/J.%20Basic.%20Appl.%20Sci.%20Res.,%203(1s)611-613,%202013.pdf) exists.
-
-#### 4.1. Rectilinear Steiner tree
-[Rectilinear Steiner tree](https://en.wikipedia.org/wiki/Rectilinear_Steiner_tree) is a variant of the geometric Steiner tree problem in the plane, in which the Euclidean distance is replaced with the rectilinear distance.
 
 ## Distance matrix heatmap
 To calculate average travel time in a given network I use [Floyd-Warshall algorithm](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm) that generates this matrix of shortest path between any set of points.  
@@ -72,6 +74,49 @@ To choose a network that best suits your needs, there is a page with scatter plo
 
 ## How to use
 This section is work in progress.
+
+Example network JSON:
+```json
+{
+    "stations": [
+        {
+            "name": "Station A",
+            "description": "This is station A",
+            "colour": "#f2a788",
+            "x": 0,
+            "z": 0
+        },
+        {
+            "name": "Station B",
+            "description": "This is station B",
+            "colour": "#f2a788",
+            "x": 10,
+            "z": 30
+        }
+    ],
+    "bolts": [
+        {
+            "directed": false,
+            "station_a": {
+                "name": "Station A",
+                "x": 0,
+                "z": 0
+            },
+            "turn": {
+                "x": 10,
+                "z": 10
+            },
+            "station_b": {
+                "name": "Station B",
+                "x": 10,
+                "z": 30
+            },
+            "length": 30,
+            "colour": "#8f7f10"
+        }
+    ]
+}
+```
 
 ## License
 This program is licensed under the MIT License. Please read the License file to know about the usage terms and conditions.
