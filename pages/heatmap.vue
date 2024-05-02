@@ -97,9 +97,17 @@ function drawHeatmap(distMatrix: DistanceMatrix[]) {
     .on("mousemove", (event: MouseEvent, d: any) => mousemove(event, d))
     .on("mouseleave", (event: MouseEvent) => mouseleave(event));
 };
+
+function copyHeatmap() {
+  const stationNames = distanceMatrix.value.map(row => row.station_name);
+  let clipboardContent = '\t' + stationNames.join('\t') + '\n';
+  clipboardContent += distanceMatrix.value.map(row => `${row.station_name}\t${row.values.join("\t")}`).join("\n");
+  navigator.clipboard.writeText(clipboardContent);
+}
 </script>
 <template>
   <NuxtLink to="/" title="Go back to main page" class="fixed top-3 left-3 text-xs">← Back</NuxtLink>
+  <BaseButton @click="copyHeatmap" class="fixed top-10 left-3 w-[70px]">Copy</BaseButton>
   <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
   <div id="distance-matrix" class="p-0 h-full w-full" />
 </template>

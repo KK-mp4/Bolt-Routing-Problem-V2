@@ -321,8 +321,6 @@
             "directed": false,
             "station_a": {
                 "name": "Slime Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -784,
                 "z": -1778
             },
@@ -332,8 +330,6 @@
             },
             "station_b": {
                 "name": "Rabbit Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1295,
                 "z": -1459
             },
@@ -344,8 +340,6 @@
             "directed": false,
             "station_a": {
                 "name": "Wolf Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -2306,
                 "z": -1107
             },
@@ -355,8 +349,6 @@
             },
             "station_b": {
                 "name": "Rabbit Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1295,
                 "z": -1459
             },
@@ -367,8 +359,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -378,8 +368,6 @@
             },
             "station_b": {
                 "name": "Triangle",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 1105,
                 "z": -1767
             },
@@ -390,8 +378,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -401,8 +387,6 @@
             },
             "station_b": {
                 "name": "Triple Center",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1757,
                 "z": -944
             },
@@ -413,8 +397,6 @@
             "directed": false,
             "station_a": {
                 "name": "Old Wither Skeleton Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -85,
                 "z": -1253
             },
@@ -424,8 +406,6 @@
             },
             "station_b": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -436,8 +416,6 @@
             "directed": false,
             "station_a": {
                 "name": "Far Double Witch Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1864,
                 "z": 476
             },
@@ -447,8 +425,6 @@
             },
             "station_b": {
                 "name": "Mooshroom Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1185,
                 "z": 26
             },
@@ -459,8 +435,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -470,8 +444,6 @@
             },
             "station_b": {
                 "name": "Mooshroom Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1185,
                 "z": 26
             },
@@ -482,8 +454,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -493,8 +463,6 @@
             },
             "station_b": {
                 "name": "Rabbit Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -1295,
                 "z": -1459
             },
@@ -505,8 +473,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -515,9 +481,7 @@
                 "z": 143
             },
             "station_b": {
-                "name": "Shithole",
-                "description": "",
-                "colour": "#f2a788",
+                "name": "Nether Wart Farm 2",
                 "x": -359,
                 "z": 143
             },
@@ -528,8 +492,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -538,9 +500,7 @@
                 "z": 349
             },
             "station_b": {
-                "name": "Tree Farm (New)",
-                "description": "",
-                "colour": "#f2a788",
+                "name": "Tree Farms (New)",
                 "x": -532,
                 "z": 349
             },
@@ -551,8 +511,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -562,8 +520,6 @@
             },
             "station_b": {
                 "name": "Passive Mob Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -641,
                 "z": 239
             },
@@ -574,8 +530,6 @@
             "directed": false,
             "station_a": {
                 "name": "New Pigman Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -102,
                 "z": 966
             },
@@ -585,8 +539,6 @@
             },
             "station_b": {
                 "name": "Old Pigman Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -102,
                 "z": 604
             },
@@ -597,8 +549,6 @@
             "directed": false,
             "station_a": {
                 "name": "Old Pigman Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -102,
                 "z": 604
             },
@@ -608,8 +558,6 @@
             },
             "station_b": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -620,8 +568,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -631,8 +577,6 @@
             },
             "station_b": {
                 "name": "Decorative Perimeter",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -430,
                 "z": -18
             },
@@ -643,8 +587,6 @@
             "directed": false,
             "station_a": {
                 "name": "Old Wool Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -268,
                 "z": -137
             },
@@ -654,8 +596,6 @@
             },
             "station_b": {
                 "name": "New Wool Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -260,
                 "z": -225
             },
@@ -666,8 +606,6 @@
             "directed": false,
             "station_a": {
                 "name": "Old Wool Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -268,
                 "z": -137
             },
@@ -677,8 +615,6 @@
             },
             "station_b": {
                 "name": "Crafting Area",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -366,
                 "z": -287
             },
@@ -689,8 +625,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -700,8 +634,6 @@
             },
             "station_b": {
                 "name": "Junction",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -172,
                 "z": -74
             },
@@ -712,8 +644,6 @@
             "directed": false,
             "station_a": {
                 "name": "Junction",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -172,
                 "z": -74
             },
@@ -723,8 +653,6 @@
             },
             "station_b": {
                 "name": "Grass Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -177,
                 "z": -95
             },
@@ -735,8 +663,6 @@
             "directed": false,
             "station_a": {
                 "name": "Grass Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -177,
                 "z": -95
             },
@@ -746,8 +672,6 @@
             },
             "station_b": {
                 "name": "Flower Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -162,
                 "z": -99
             },
@@ -758,8 +682,6 @@
             "directed": false,
             "station_a": {
                 "name": "Junction",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -172,
                 "z": -74
             },
@@ -769,8 +691,6 @@
             },
             "station_b": {
                 "name": "Iron Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -190,
                 "z": -55
             },
@@ -781,8 +701,6 @@
             "directed": false,
             "station_a": {
                 "name": "Junction",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -172,
                 "z": -74
             },
@@ -792,8 +710,6 @@
             },
             "station_b": {
                 "name": "Old Wool Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -268,
                 "z": -137
             },
@@ -804,8 +720,6 @@
             "directed": false,
             "station_a": {
                 "name": "Portal Pigman Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -249,
                 "z": -608
             },
@@ -815,8 +729,6 @@
             },
             "station_b": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -827,8 +739,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -838,8 +748,6 @@
             },
             "station_b": {
                 "name": "Old Netherwart Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -91,
                 "z": -64
             },
@@ -850,8 +758,6 @@
             "directed": false,
             "station_a": {
                 "name": "Quad Witch Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -71,
                 "z": -71
             },
@@ -861,8 +767,6 @@
             },
             "station_b": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -873,8 +777,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -884,8 +786,6 @@
             },
             "station_b": {
                 "name": "Close Double Witch",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 77,
                 "z": -320
             },
@@ -896,8 +796,6 @@
             "directed": false,
             "station_a": {
                 "name": "Leaf Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -78,
                 "z": 58
             },
@@ -907,8 +805,6 @@
             },
             "station_b": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -919,8 +815,6 @@
             "directed": false,
             "station_a": {
                 "name": "Concrete Converter",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -33,
                 "z": 102
             },
@@ -930,8 +824,6 @@
             },
             "station_b": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -942,8 +834,6 @@
             "directed": false,
             "station_a": {
                 "name": "Squid Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 276,
                 "z": 23
             },
@@ -953,8 +843,6 @@
             },
             "station_b": {
                 "name": "Guardian Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 155,
                 "z": 121
             },
@@ -965,8 +853,6 @@
             "directed": false,
             "station_a": {
                 "name": "Guardian Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 155,
                 "z": 121
             },
@@ -976,8 +862,6 @@
             },
             "station_b": {
                 "name": "Villager",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 63,
                 "z": 121
             },
@@ -988,8 +872,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -999,8 +881,6 @@
             },
             "station_b": {
                 "name": "Villager",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 63,
                 "z": 121
             },
@@ -1011,8 +891,6 @@
             "directed": false,
             "station_a": {
                 "name": "New Ice Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 434,
                 "z": -358
             },
@@ -1022,8 +900,6 @@
             },
             "station_b": {
                 "name": "Mob Museum",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 459,
                 "z": -318
             },
@@ -1034,8 +910,6 @@
             "directed": false,
             "station_a": {
                 "name": "New Ice Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 434,
                 "z": -358
             },
@@ -1045,8 +919,6 @@
             },
             "station_b": {
                 "name": "Stray Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 395,
                 "z": -269
             },
@@ -1057,8 +929,6 @@
             "directed": false,
             "station_a": {
                 "name": "Old Ice Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 227,
                 "z": -92
             },
@@ -1068,8 +938,6 @@
             },
             "station_b": {
                 "name": "Stray Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 395,
                 "z": -269
             },
@@ -1080,8 +948,6 @@
             "directed": false,
             "station_a": {
                 "name": "Main Storage",
-                "description": "",
-                "colour": "#f2a788",
                 "x": -105,
                 "z": -7
             },
@@ -1091,8 +957,6 @@
             },
             "station_b": {
                 "name": "Old Ice Farm",
-                "description": "",
-                "colour": "#f2a788",
                 "x": 227,
                 "z": -92
             },

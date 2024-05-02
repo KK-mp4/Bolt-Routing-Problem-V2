@@ -2,7 +2,6 @@
 // @ts-ignore: D3.js is missing declaration file
 import * as d3 from 'd3';
 import { useLocalStorage } from '@vueuse/core';
-
 useHead({ title: "Bolt Routing Problem V2" });
 
 const user_msg = ref(''); // Message that is displayed at the bottom left corner of the screen
@@ -424,6 +423,10 @@ function onGraphChange() {
 
   user_msg.value = "Processing time: " + (Date.now() - start) + "ms";
 
+  if (colourGraph.value) {
+    generateColours();
+  }
+
   updateMap();
   updateData();
 }
@@ -433,6 +436,65 @@ function updateData() {
   if (calcStats.value) {
     averageTravelTime.value = calculateAverageTravelTime(network.value);
   }
+}
+
+function generateColours() {
+  network.value.stations.forEach(station => {
+    station.colour = getRandomHexColor();
+  });
+
+  network.value.bolts.forEach(bolt => {
+    const stationB = network.value.stations.find(station => station.name === bolt.station_b.name);
+        if (stationB) {
+            bolt.colour = stationB.colour;
+        } else {
+            console.error(`Station ${bolt.station_b.name} not found in network.`);
+        }
+  });
+}
+
+function getRandomHexColor(): string {
+    // Generate a random hue value (H) between 0 and 360
+    const h = Math.floor(Math.random() * 361);
+
+    // Set constant saturation (S) and lightness (L) values
+    const s = 80; // 80%
+    const l = 74; // 74%
+
+    // Convert HSL to RGB
+    const c = (1 - Math.abs(2 * (l / 100) - 1)) * (s / 100);
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = (l / 100) - c / 2;
+
+    let r = 0, g = 0, b = 0;
+    if (h >= 0 && h < 60) {
+        r = c;
+        g = x;
+    } else if (h >= 60 && h < 120) {
+        r = x;
+        g = c;
+    } else if (h >= 120 && h < 180) {
+        g = c;
+        b = x;
+    } else if (h >= 180 && h < 240) {
+        g = x;
+        b = c;
+    } else if (h >= 240 && h < 300) {
+        r = x;
+        b = c;
+    } else if (h >= 300 && h < 360) {
+        r = c;
+        b = x;
+    }
+
+    // Convert RGB to hexadecimal
+    const rgbToHex = (rgb: number): string => {
+        const hex = Math.round(rgb * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    const hexColor = `#${rgbToHex(r + m)}${rgbToHex(g + m)}${rgbToHex(b + m)}`;
+    return hexColor.toUpperCase();
 }
 
 onBeforeUnmount(() => {

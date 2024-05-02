@@ -101,13 +101,6 @@ export function calculateAverageTravelTime(network: Network): number {
       }
   }
 
-  // // Converting dist array to a string for Excel
-  // const headerRow = [''].concat(stations.map(station => station.name));
-  // const distString = [headerRow].concat(dist.map((row, index) => [stations[index].name].concat(row))).map(row => row.join('\t')).join('\n');
-
-  // // Copy the dist string to the clipboard
-  // navigator.clipboard.writeText(distString);
-
   storeDistanceMatrix(dist, stations);
 
   // Calculating average distance and then time (speed is 20 m/s)
@@ -115,56 +108,24 @@ export function calculateAverageTravelTime(network: Network): number {
 }
 
 function storeDistanceMatrix(distMatrix: number[][], stations: Station[]): void {
-  // // Create an array to store station data
-  // const dataToStore: any[] = [];
+  const dataToStore: DistanceMatrix[] = [];
 
-  // // Iterate over each station
-  // for (let i = 0; i < stations.length; i++) {
-  //     const station = stations[i];
-  //     const stationData: any[] = [];
-      
-  //     // Add station name as the first element
-  //     stationData.push(station.name);
-      
-  //     // Add distances to other stations
-  //     for (let j = 0; j < stations.length; j++) {
-  //         stationData.push(distMatrix[i][j]);
-  //     }
-      
-  //     // Push station data to the main array
-  //     dataToStore.push(stationData);
-  // }
-  
-  // // Convert the array to a JSON string
-  // const dataToStoreString = JSON.stringify(dataToStore);
-  
-  // // Store the JSON string in the local storage
-  // localStorage.setItem('distanceMatrix', dataToStoreString);
+  // Iterating over each station
+  for (let i = 0; i < stations.length; i++) {
+    const station = stations[i];
+    const stationData: DistanceMatrix = {
+      station_name: station.name,
+      values: []
+    };
 
-    // Create an array to store station data
-    const dataToStore: DistanceMatrix[] = [];
-
-    // Iterate over each station
-    for (let i = 0; i < stations.length; i++) {
-      const station = stations[i];
-      const stationData: DistanceMatrix = {
-        station_name: station.name,
-        values: []
-      };
-  
-      // Add distances to other stations
-      for (let j = 0; j < stations.length; j++) {
-        stationData.values.push(distMatrix[i][j]);
-      }
-  
-      // Push station data to the main array
-      dataToStore.push(stationData);
+    // Adding distances to other stations
+    for (let j = 0; j < stations.length; j++) {
+      stationData.values.push(distMatrix[i][j]);
     }
-  
-    // Convert the array to a JSON string
-    const dataToStoreString = JSON.stringify(dataToStore);
-  
-    // Store the JSON string in the local storage
-    localStorage.setItem('distance-matrix', dataToStoreString);
-}
 
+    dataToStore.push(stationData);
+  }
+
+  const dataToStoreString = JSON.stringify(dataToStore);
+  localStorage.setItem('distance-matrix', dataToStoreString);
+}

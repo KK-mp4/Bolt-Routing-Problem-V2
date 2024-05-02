@@ -65,12 +65,10 @@ const deleteStation = (index: number) => {
             </button>
           </td>
         </tr>
-        <tr>
-          <td colspan="5" class="px-6 py-4">
-            <BaseButton @click="addNewStation">Add</BaseButton>
-          </td>
-        </tr>
       </tbody>
     </table>
+    <div class="px-5 py-2">
+      <BaseButton @click="addNewStation" class="w-full">Add</BaseButton>
+    </div>
   </div>
 </template>
