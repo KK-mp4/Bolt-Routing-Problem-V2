@@ -4,8 +4,14 @@ export default defineNuxtConfig({
   ssr: false,
   modules: [
     "@nuxtjs/tailwindcss",
-    "nuxt-icon"
+    "nuxt-icon",
+    "@nuxt/eslint"
   ],
+  imports: {
+    dirs: [
+      'composables/**'
+    ]
+  },
   tailwindcss: {
     cssPath: ["~/assets/css/tailwind.css", { injectPosition: 0 }],
     configPath: 'tailwind.config.js',

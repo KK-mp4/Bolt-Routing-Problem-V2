@@ -74,7 +74,7 @@ function updateMap() {
   const yScale = d3.scaleLinear()
     .domain([-yRange, yRange])
     .range([margin.top, chart_dy]);
-  
+
   // X position
   const xScale = d3.scaleLinear()
     .domain([-xRange, xRange])
@@ -99,7 +99,7 @@ function updateMap() {
     .call(yAxis)
     .style("font-family", "Fira Code")
     .style("font-size", "10px");
-  
+
   // Add x-axis
   svg.append("g")
     .attr("id", "x_axis")
@@ -111,7 +111,7 @@ function updateMap() {
   // Calculating the number of ticks for both x-axis and y-axis
   const numTicksX = Math.round(Math.min(chart_dx, chart_dy) / 64);
   const numTicksY = Math.round(Math.min(chart_dx, chart_dy) / 64 * (chart_dy / chart_dx));
-  
+
   // Add x and y grid lines
   svg.select("#x_axis").call(xAxis.scale(xScale).ticks(numTicksX).tickSize(-chart_dy));
   svg.select("#y_axis").call(yAxis.scale(yScale).ticks(numTicksY).tickSize(-chart_dx));
@@ -377,7 +377,7 @@ function updateMap() {
   }
 }
 
-function onGraphChange() {
+async function onGraphChange() {
   const start = Date.now();
 
   switch(graphType.value) {
@@ -397,7 +397,11 @@ function onGraphChange() {
     }
 
     case "Nearest neighbor": {
-      network.value = generateNNGraph(network.value);
+      await generateNNGraphASYNC(network.value, (path: Network) => {
+        network.value = path; // Update the network value with the new shortest path
+        updateMap(); // Update the map whenever a new shortest path is found
+        // updateData(); // Update data as needed
+      });
       break;
     }
 
@@ -524,7 +528,6 @@ onBeforeUnmount(() => {
       <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
       <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
       <!-- <option value="Euclidean Steiner tree">Euclidean Steiner tree (WIP)</option> -->
-      <!-- <option value="Rectilinear Steiner tree">Rectilinear Steiner tree (WIP)</option> -->
     </BaseSelect>
 
     <div v-if="graphType === 'Star graph'">

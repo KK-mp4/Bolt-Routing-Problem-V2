@@ -42,7 +42,7 @@ export function calculateTotalDist(network: Network): number[] {
     totalTunnel += bolt.length;
     if (bolt.directed === false) totalBolt += bolt.length;
   })
-  
+
   totalBolt += totalTunnel;
   return [totalBolt, totalTunnel];
 }
@@ -54,20 +54,20 @@ export function calculateAverageTravelTime(network: Network): number {
 
   const n = stations.length;
   const inf = Number.POSITIVE_INFINITY;
-  
+
   // Initializing distance matrix with infinity
   const dist: number[][] = Array.from({ length: n }, () => Array(n).fill(inf));
-  
+
   // Initializing diagonal elements to 0
   for (let i = 0; i < n; i++) {
       dist[i][i] = 0;
   }
-  
+
   // Filling in edge weights in the distance matrix
   for (const bolt of bolts) {
     const stationA = stations.find(station => station.name === bolt.station_a.name);
     const stationB = stations.find(station => station.name === bolt.station_b.name);
-    
+
     // Check if both stations exist
     if (stationA && stationB) {
         const stationAIndex = stations.indexOf(stationA);
@@ -76,7 +76,7 @@ export function calculateAverageTravelTime(network: Network): number {
         dist[stationBIndex][stationAIndex] = bolt.length;
     }
   }
-  
+
   // Floyd-Warshall algorithm
   for (let k = 0; k < n; k++) {
       for (let i = 0; i < n; i++) {
@@ -90,7 +90,7 @@ export function calculateAverageTravelTime(network: Network): number {
 
   let totalDistance = 0;
   let validDistances = 0;
-  
+
   // Suming up distances and count valid distances
   for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
