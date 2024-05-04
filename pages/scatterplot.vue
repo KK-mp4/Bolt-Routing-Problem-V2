@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// @ts-ignore: D3.js is missing declaration file
+// @ts-expect-error: D3.js is missing declaration file
 import * as d3 from 'd3';
 import { useLocalStorage } from '@vueuse/core';
 useHead({ title: "Scatter plot" });
@@ -30,7 +30,7 @@ function drawPlot(plotData: PlotData[]) {
   const chart_dy = window.innerHeight - margin.top - margin.bottom;
 
   // Append the svg object to the body of the page
-  var svg = d3.select("#scatter-plot")
+  const svg = d3.select("#scatter-plot")
     .append("svg")
     .attr("width", chart_dx + margin.left + margin.right)
     .attr("height", chart_dy + margin.top + margin.bottom)
@@ -38,7 +38,7 @@ function drawPlot(plotData: PlotData[]) {
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // X axis
-  var x = d3.scaleLog()
+  const x = d3.scaleLog()
     .domain([1, d3.max(plotData, (d: PlotData) => d.length) || 1])
     .range([ 0, chart_dx ]);
   svg.append("g")
@@ -59,7 +59,7 @@ function drawPlot(plotData: PlotData[]) {
     .style("font-size", "12px");
 
   // Y axis
-  var y = d3.scaleLinear()
+  const y = d3.scaleLinear()
     .domain([0, d3.max(plotData, (d: PlotData) => d.time) || 1])
     .range([ chart_dy, 0]);
   svg.append("g")

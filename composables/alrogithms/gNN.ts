@@ -218,7 +218,7 @@ function intersects(bolt1: Bolt, bolt2: Bolt): boolean {
   const r = bolt2.station_b.x;
   const s = bolt2.station_b.z;
 
-  var det, gamma, lambda;
+  let det, gamma, lambda;
   det = (c - a) * (s - q) - (r - p) * (d - b);
   if (det === 0) {
     return false;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// @ts-ignore: D3.js is missing declaration file
+// @ts-expect-error: D3.js is missing declaration file
 import * as d3 from 'd3';
 import { useLocalStorage } from '@vueuse/core';
 useHead({ title: "Distance matrix heatmap" });
@@ -107,7 +107,7 @@ function copyHeatmap() {
 </script>
 <template>
   <NuxtLink to="/" title="Go back to main page" class="fixed top-3 left-3 text-xs">← Back</NuxtLink>
-  <BaseButton @click="copyHeatmap" class="fixed top-10 left-3 w-[70px]">Copy</BaseButton>
+  <BaseButton class="fixed top-10 left-3 w-[70px]" @click="copyHeatmap">Copy</BaseButton>
   <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
   <div id="distance-matrix" class="p-0 h-full w-full" />
 </template>

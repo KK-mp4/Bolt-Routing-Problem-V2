@@ -143,7 +143,8 @@ function convertPlotDataToCSV(data: PlotData[]) {
     <div class="min-w-[520px] w-[520px] flex flex-col">
       <NuxtLink to="/" title="Go back to main page" class="fixed top-3 left-3 text-xs">← Back</NuxtLink>
       <div class="p-5 my-auto flex flex-col">
-        <a class="underline cursor-pointer text-xl text-primary mb-7 font-extrabold" href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip"
+        <a
+class="underline cursor-pointer text-xl text-primary mb-7 font-extrabold" href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2?tab=readme-ov-file#piston-bolt-network-builder-for-minecraft-v2-wip"
           target="_blank" rel="noopener noreferrer" title="GitHub">
           User guide available on GitHub:
         </a>
@@ -151,12 +152,12 @@ function convertPlotDataToCSV(data: PlotData[]) {
         <BaseToggle v-model="showLabels" @change="onSettingsChange">Show station labels<p class="text-xs text-primary">Displays station labels next to graph vertices</p></BaseToggle>
         <BaseToggle v-model="colourGraph" @change="onSettingsChange">Colour graph automatically<p class="text-xs text-primary">Colours graph randomly after generation</p></BaseToggle>
         <BaseToggle v-model="calcStats" @change="onSettingsChange">Calculate average travel time<p class="text-xs text-primary">Slows processing time, but unlocks distance matrix heatmap</p></BaseToggle>
-        <div class="w-full h-0 border border-primary mb-7"></div>
+        <div class="w-full h-0 border border-primary mb-7"/>
 
         <BaseButton @click="triggerFileInput">Import network<Icon class="ml-3 my-auto" name="bi:filetype-json" size="16px" /></BaseButton>
-        <input type="file" ref="fileInput" style="display: none" @change="importNetwork">
+        <input ref="fileInput" type="file" style="display: none" @change="importNetwork">
         <BaseButton @click="network = { stations: [], bolts: [] }">Clear network</BaseButton>
-        <div class="w-full h-0 border border-primary mb-7"></div>
+        <div class="w-full h-0 border border-primary mb-7"/>
 
         <BaseButton @click="exportNetwork">Export network<Icon class="ml-3 my-auto" name="bi:filetype-json" size="16px" /></BaseButton>
         <BaseButton @click="exportDistanceMatrix">Export distance matrix<Icon class="ml-3 my-auto" name="bi:filetype-csv" size="16px" /></BaseButton>
