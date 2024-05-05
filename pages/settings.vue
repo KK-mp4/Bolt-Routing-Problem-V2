@@ -150,8 +150,8 @@ function convertPlotDataToCSV(data: PlotData[]) {
 }
 </script>
 <template>
-  <div class="flex">
-    <div class="min-w-[520px] w-[520px] flex flex-col">
+  <div class="flex flex-col xl:flex-row">
+    <div class="min-w-[520px] w-[520px] flex flex-col mt-3 mx-auto">
       <NuxtLink to="/" title="Go back to main page" class="fixed top-3 left-3 text-xs">← Back</NuxtLink>
       <div class="p-5 my-auto flex flex-col">
         <a

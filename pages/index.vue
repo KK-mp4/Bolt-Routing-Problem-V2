@@ -473,7 +473,7 @@ onBeforeUnmount(() => {
       <span class="text-[10px] text-text">*early alpha build by kk</span>
     </p>
 
-    <BaseSelect v-model="graphType" @change="onGraphChange">
+    <BaseSelect aria-label="Graph type" v-model="graphType" @change="onGraphChange">
       <option value="None">None</option>
       <option value="Star graph">Star graph (WIP)</option>
       <option value="Complete graph">Complete graph</option>
@@ -519,7 +519,7 @@ onBeforeUnmount(() => {
 
   <p class="fixed bottom-0 left-0 text-sm select-none">{{ userMsg }}</p>
 
-  <div class="fixed bottom-0 right-0 text-[10px] select-none">
+  <div class="fixed bottom-0 right-0 text-[10px] select-none invisible md:visible">
     <p>pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3</p>
   </div>
 
