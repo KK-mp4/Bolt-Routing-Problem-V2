@@ -1,40 +1,3 @@
-export function calculateTurn(station_a: Station, station_b: Station): {x: number; z: number; } {
-  // Very nice and clean way to do it, I know
-  const difference_x = station_a.x - station_b.x;
-  const difference_z = station_a.z - station_b.z;
-
-  const abs_difference_x = Math.abs(difference_x);
-  const abs_difference_z = Math.abs(difference_z);
-
-  let x: number;
-  let z: number;
-
-  const sign_z = difference_z >= 0 ? -1 : 1;
-  const sign_x = difference_x >= 0 ? -1 : 1;
-
-  if (abs_difference_x >= abs_difference_z) {
-      x = station_a.x + sign_x * abs_difference_z;
-      z = station_a.z + sign_z * abs_difference_z;
-  } else {
-      x = station_a.x + sign_x * abs_difference_x;
-      z = station_a.z + sign_z * abs_difference_x;
-  }
-
-  return { x, z };
-}
-
-export const chebyshevDistance = (station_a: Station, station_b: Station): number => {
-  return Math.max(Math.abs(station_a.x - station_b.x), Math.abs(station_a.z - station_b.z));
-}
-
-// Should run some tests to confirm that this is slower
-function chebyshevDistanceSlow(station_a: Station, station_b: Station): number {
-  const difference_x = Math.abs(station_a.x - station_b.x);
-  const difference_z = Math.abs(station_a.z - station_b.z);
-
-  return difference_x >= difference_z ? difference_x : difference_z;
-}
-
 export function calculateTotalDist(network: Network): number[] {
   let totalBolt = 0;
   let totalTunnel = 0;
@@ -59,7 +22,7 @@ export function calculateAverageTravelTime(network: Network): number {
   const dist: number[][] = Array.from({ length: n }, () => Array(n).fill(inf));
 
   // Initializing diagonal elements to 0
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < n; ++i) {
       dist[i][i] = 0;
   }
 
@@ -78,9 +41,9 @@ export function calculateAverageTravelTime(network: Network): number {
   }
 
   // Floyd-Warshall algorithm
-  for (let k = 0; k < n; k++) {
-      for (let i = 0; i < n; i++) {
-          for (let j = 0; j < n; j++) {
+  for (let k = 0; k < n; ++k) {
+      for (let i = 0; i < n; ++i) {
+          for (let j = 0; j < n; ++j) {
               if (dist[i][k] !== inf && dist[k][j] !== inf) {
                   dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
               }
@@ -92,8 +55,8 @@ export function calculateAverageTravelTime(network: Network): number {
   let validDistances = 0;
 
   // Suming up distances and count valid distances
-  for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
+  for (let i = 0; i < n; ++i) {
+      for (let j = 0; j < n; ++j) {
           if (i !== j && dist[i][j] !== inf) {
               totalDistance += dist[i][j];
               validDistances++;
@@ -111,7 +74,7 @@ function storeDistanceMatrix(distMatrix: number[][], stations: Station[]): void 
   const dataToStore: DistanceMatrix[] = [];
 
   // Iterating over each station
-  for (let i = 0; i < stations.length; i++) {
+  for (let i = 0; i < stations.length; ++i) {
     const station = stations[i];
     const stationData: DistanceMatrix = {
       station_name: station.name,
@@ -119,7 +82,7 @@ function storeDistanceMatrix(distMatrix: number[][], stations: Station[]): void 
     };
 
     // Adding distances to other stations
-    for (let j = 0; j < stations.length; j++) {
+    for (let j = 0; j < stations.length; ++j) {
       stationData.values.push(distMatrix[i][j]);
     }
 
@@ -128,4 +91,76 @@ function storeDistanceMatrix(distMatrix: number[][], stations: Station[]): void 
 
   const dataToStoreString = JSON.stringify(dataToStore);
   localStorage.setItem('distance-matrix', dataToStoreString);
+}
+
+export function autoColourGraph(network: Network): Network {
+  network.stations.forEach(station => {
+    station.colour = getRandomHexColor(station.name);
+  });
+
+  network.bolts.forEach(bolt => {
+    const stationB = network.stations.find(station => station.name === bolt.station_b.name);
+        if (stationB) {
+            bolt.colour = stationB.colour;
+        } else {
+            console.error(`Station ${bolt.station_b.name} not found in network.`);
+        }
+  });
+
+  return network;
+}
+
+function getRandomHexColor(seed: string): string {
+    // Generate a random hue value (H) between 0 and 360
+    // const h = Math.floor(Math.random() * 361);
+    const h = stringToDegrees(seed);
+
+    // Set constant saturation (S) and lightness (L) values
+    const s = 80; // 80%
+    const l = 74; // 74%
+
+    // Convert HSL to RGB
+    const c = (1 - Math.abs(2 * (l / 100) - 1)) * (s / 100);
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = (l / 100) - c / 2;
+
+    let r = 0, g = 0, b = 0;
+    if (h >= 0 && h < 60) {
+        r = c;
+        g = x;
+    } else if (h >= 60 && h < 120) {
+        r = x;
+        g = c;
+    } else if (h >= 120 && h < 180) {
+        g = c;
+        b = x;
+    } else if (h >= 180 && h < 240) {
+        g = x;
+        b = c;
+    } else if (h >= 240 && h < 300) {
+        r = x;
+        b = c;
+    } else if (h >= 300 && h < 360) {
+        r = c;
+        b = x;
+    }
+
+    // Convert RGB to hexadecimal
+    const rgbToHex = (rgb: number): string => {
+        const hex = Math.round(rgb * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    const hexColor = `#${rgbToHex(r + m)}${rgbToHex(g + m)}${rgbToHex(b + m)}`;
+    return hexColor.toUpperCase();
+}
+
+function stringToDegrees(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; ++i) {
+      hash = (hash << 5) - hash + seed.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+  }
+
+  return Math.abs(hash % 360);
 }

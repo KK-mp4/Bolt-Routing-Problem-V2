@@ -59,6 +59,6 @@ export function runKruskalsAlgotithm(network: Network): Network {
 
   // Update the network with the MST bolts
   network.bolts = mst;
-  
+
   return network;
 }

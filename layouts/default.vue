@@ -5,7 +5,7 @@ useHead({
     },
   meta: [
     { charset: 'utf-8' },
-    { name: 'Piston Bolt Network Builder for Minecraft', content: 'Author:  KK-mp4' }
+    { name: 'Piston Bolt Network Builder for Minecraft', content: 'Author:  KK' }
   ],
   link: [
     {
@@ -33,12 +33,15 @@ body {
   margin: 0;
   font-size: 14px;
   font-family: Fara Code;
+  background-color: #1f0903;
 }
 
 @font-face {
   font-family: 'Fara Code';
   src: url('/FiraCode-VariableFont_wght.ttf') format('truetype');
-  font-weight: 400;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 ::-webkit-scrollbar {

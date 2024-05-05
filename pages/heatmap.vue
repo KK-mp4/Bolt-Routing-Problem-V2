@@ -1,17 +1,34 @@
 <script setup lang="ts">
-// @ts-expect-error: D3.js is missing declaration file
 import * as d3 from 'd3';
 import { useLocalStorage } from '@vueuse/core';
-useHead({ title: "Distance matrix heatmap" });
 
-const distanceMatrix = useLocalStorage('distance-matrix', {} as DistanceMatrix[]);
-const user_msg = ref('');
-
-onMounted(() => {
-  drawHeatmap(distanceMatrix.value);
+useSeoMeta({
+  title: 'Distance matrix heatmap - Piston Bolt Network Builder',
+  description: 'Tool for generating and editing piston bolt networks for Minecraft',
+  ogTitle: 'Piston Bolt Network Builder',
+  ogDescription: 'Tool for generating and editing piston bolt networks for Minecraft',
+  ogImage: '/ogImage.webp',
+  ogUrl: 'https://bolt-routing-problem-v2.vercel.app/heatmap',
+  twitterTitle: 'Piston Bolt Network Builder',
+  twitterDescription: 'Tool for generating and editing piston bolt networks for Minecraft',
+  twitterImage: '/ogImage.webp',
+  twitterCard: 'summary'
 });
 
-function drawHeatmap(distMatrix: DistanceMatrix[]) {
+const distanceMatrix = useLocalStorage('distance-matrix', {} as DistanceMatrix[]);
+const userMsg = ref('');
+
+onMounted(() => {
+  window.addEventListener('resize', drawHeatmap);
+  drawHeatmap();
+});
+
+function drawHeatmap() {
+  const distMatrix = document.getElementById('distance-matrix');
+  if (distMatrix !== null) {
+    distMatrix.innerHTML = '';
+  }
+
   const margin = { top: 30, right: 30, bottom: 150, left: 200 };
   const width = window.innerWidth - margin.left - margin.right;
   const height = window.innerHeight - margin.top - margin.bottom;
@@ -23,7 +40,7 @@ function drawHeatmap(distMatrix: DistanceMatrix[]) {
     .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  const labels: string[] = distMatrix.map(station => station.station_name);
+  const labels: string[] = distanceMatrix.value.map(station => station.station_name);
 
   // Build X scales and axis:
   const x = d3.scaleBand()
@@ -56,26 +73,26 @@ function drawHeatmap(distMatrix: DistanceMatrix[]) {
     .style("fill", "#fbdfd8")
     .attr("dy", "10px");
 
-  const myColor = d3.scaleLinear()
+  const myColor = d3.scaleLinear<string, number>()
     .range(["#F4EDE1", "#84BBA7"])
-    .domain([0, d3.max(distMatrix, (d: DistanceMatrix) => d3.max(d.values))]);
+    .domain([0, d3.max(distanceMatrix.value, (d: DistanceMatrix) => d3.max(d.values)) || 1]);
 
   const mouseover = function(event: MouseEvent, d: any) {
     const value = d.value !== null ? d.value + " blocks" : "does not exist";
-    user_msg.value = `Shortest path from ${labels[d.rowIndex]} to ${labels[d.colIndex]} - ${value}`;
+    userMsg.value = `Shortest path from ${labels[d.rowIndex]} to ${labels[d.colIndex]} - ${value}`;
   };
 
   const mousemove = function(event: MouseEvent, d: any) {
     const value = d.value !== null ? d.value + " blocks" : "does not exist";
-    user_msg.value = `Shortest path from ${labels[d.rowIndex]} to ${labels[d.colIndex]} - ${value}`;
+    userMsg.value = `Shortest path from ${labels[d.rowIndex]} to ${labels[d.colIndex]} - ${value}`;
   };
 
   const mouseleave = function(event: MouseEvent) {
-    user_msg.value = '';
+    userMsg.value = '';
   };
 
   svg.selectAll()
-    .data(distMatrix)
+    .data(distanceMatrix.value)
     .enter()
     .append("g")
     .selectAll("rect")
@@ -88,8 +105,8 @@ function drawHeatmap(distMatrix: DistanceMatrix[]) {
     })
     .enter()
     .append("rect")
-    .attr("x", (d: any) => x(labels[d.colIndex]))
-    .attr("y", (d: any) => y(labels[d.rowIndex]))
+    .attr("x", (d: any) => String(x(labels[d.colIndex])))
+    .attr("y", (d: any) => String(y(labels[d.rowIndex])))
     .attr("width", x.bandwidth())
     .attr("height", y.bandwidth())
     .style("fill", (d: any) => myColor(d.value))
@@ -104,10 +121,14 @@ function copyHeatmap() {
   clipboardContent += distanceMatrix.value.map(row => `${row.station_name}\t${row.values.join("\t")}`).join("\n");
   navigator.clipboard.writeText(clipboardContent);
 }
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', drawHeatmap);
+});
 </script>
 <template>
   <NuxtLink to="/" title="Go back to main page" class="fixed top-3 left-3 text-xs">← Back</NuxtLink>
-  <BaseButton class="fixed top-10 left-3 w-[70px]" @click="copyHeatmap">Copy</BaseButton>
-  <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
+  <BaseButton class="fixed top-10 left-3 !w-[70px]" @click="copyHeatmap">Copy</BaseButton>
+  <p class="fixed bottom-0 left-0 text-sm select-none">{{ userMsg }}</p>
   <div id="distance-matrix" class="p-0 h-full w-full" />
 </template>

@@ -1,0 +1,1 @@
+import{_ as e,o,c as t,k as n}from"./2wVEZbMm.js";const c={},s={type:"button",class:"w-full text-background bg-primary hover:bg-background hover:text-primary border-2 border-primary rounded-sm py-1 me-2 mb-2"};function a(r,_){return o(),t("button",s,[n(r.$slots,"default")])}const m=e(c,[["render",a]]);export{m as _};

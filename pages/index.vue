@@ -1,10 +1,21 @@
 <script setup lang="ts">
-// @ts-ignore: D3.js is missing declaration file
 import * as d3 from 'd3';
 import { useLocalStorage } from '@vueuse/core';
-useHead({ title: "Bolt Routing Problem V2" });
 
-const user_msg = ref(''); // Message that is displayed at the bottom left corner of the screen
+useSeoMeta({
+  title: 'Piston Bolt Network Builder',
+  description: 'Tool for generating and editing piston bolt networks for Minecraft',
+  ogTitle: 'Piston Bolt Network Builder',
+  ogDescription: 'Tool for generating and editing piston bolt networks for Minecraft',
+  ogImage: '/ogImage.webp',
+  ogUrl: 'https://bolt-routing-problem-v2.vercel.app/',
+  twitterTitle: 'Piston Bolt Network Builder',
+  twitterDescription: 'Tool for generating and editing piston bolt networks for Minecraft',
+  twitterImage: '/ogImage.webp',
+  twitterCard: 'summary'
+});
+
+const userMsg = ref(''); // Message that is displayed at the bottom left corner of the screen
 const network = useLocalStorage('piston-bolt-network', {} as Network);  // Object containing stations and bolts
 let startStation: Station = <Station>{};  // Starting station for manual connection
 let endPoint: number[] = [];  // Ending station x, z
@@ -37,7 +48,7 @@ onMounted(async () => {
 
 function updateMap() {
   // Clear old SVG when 'network_map' is clicked
-  let network_map = document.getElementById('network_map');
+  const network_map = document.getElementById('network_map');
   if (network_map !== null) {
     network_map.innerHTML = '';
   }
@@ -51,8 +62,8 @@ function updateMap() {
 
 
   // Finding the maximum absolute range of both x and z dimensions
-  const maxX = d3.max(network.value.stations, (d: Station) => Math.abs(d.x));
-  const maxY = d3.max(network.value.stations, (d: Station) => Math.abs(d.z));
+  const maxX = d3.max(network.value.stations, (d: Station) => Math.abs(d.x)) || 1000;
+  const maxY = d3.max(network.value.stations, (d: Station) => Math.abs(d.z)) || 1000;
   const maxRange = Math.max(maxX, maxY) * 1.01; // 1% extra so that stations are not overlapping with axis
 
   // Calculating the aspect ratio
@@ -113,8 +124,8 @@ function updateMap() {
   const numTicksY = Math.round(Math.min(chart_dx, chart_dy) / 64 * (chart_dy / chart_dx));
 
   // Add x and y grid lines
-  svg.select("#x_axis").call(xAxis.scale(xScale).ticks(numTicksX).tickSize(-chart_dy));
-  svg.select("#y_axis").call(yAxis.scale(yScale).ticks(numTicksY).tickSize(-chart_dx));
+  svg.select<SVGGElement>("#x_axis").call(xAxis.scale(xScale).ticks(numTicksX).tickSize(-chart_dy));
+  svg.select<SVGGElement>("#y_axis").call(yAxis.scale(yScale).ticks(numTicksY).tickSize(-chart_dx));
 
   svg.selectAll(".tick line").style("stroke", "#422B25");
 
@@ -190,11 +201,11 @@ function updateMap() {
   const zoomBehavior = d3.zoom().on("zoom", zoom);
 
   // Call the zoom behavior on the SVG element
-  svg.call(zoomBehavior);
+  svg.call(zoomBehavior as any);
 
   // Apply saved transform here if it exists
   if (savedTransform !== undefined) {
-    svg.call(zoomBehavior.transform, savedTransform);
+    svg.call(zoomBehavior.transform as any, savedTransform);
   }
 
   svg.on("mousemove", (event: MouseEvent) => {
@@ -202,11 +213,14 @@ function updateMap() {
       // Get the SVG element
       const svgElement = svg.node();
 
+      if (!svgElement) return;
+
       // Get the SVG coordinates of the mouse cursor relative to the SVG element
       const svgPoint = svgElement.createSVGPoint();
       svgPoint.x = event.offsetX;
       svgPoint.y = event.offsetY;
       const screenCTM = svgElement.getScreenCTM();
+      if (!screenCTM) return;
       const svgCursorPoint = svgPoint.matrixTransform(screenCTM.inverse());
 
       // Convert SVG coordinates to data space using scales
@@ -247,21 +261,23 @@ function updateMap() {
     d3.select("#y_axis")
       .transition()
       .duration(50)
-      .call(yAxis.scale(transform.rescaleY(yScale)));
+      // .call(yAxis.scale(transform.rescaleY(yScale)));
+      .call(transition => yAxis.scale(transform.rescaleY(yScale)));
 
     // Re-scale x axis during zoom
     d3.select("#x_axis")
       .transition()
       .duration(50)
-      .call(xAxis.scale(transform.rescaleX(xScale)));
+      // .call(xAxis.scale(transform.rescaleX(xScale)));
+      .call(transition => xAxis.scale(transform.rescaleY(xScale)));
 
     // Re-draw vertices using new scales
     const new_xScale = transform.rescaleX(xScale);
     const new_yScale = transform.rescaleY(yScale);
 
     // Re-scale axes and gridlines
-    svg.select("#x_axis").call(xAxis.scale(new_xScale).ticks(numTicksX).tickSize(-chart_dy));
-    svg.select("#y_axis").call(yAxis.scale(new_yScale).ticks(numTicksY).tickSize(-chart_dx));
+    svg.select<SVGGElement>("#x_axis").call(xAxis.scale(new_xScale).ticks(numTicksX).tickSize(-chart_dy));
+    svg.select<SVGGElement>("#y_axis").call(yAxis.scale(new_yScale).ticks(numTicksY).tickSize(-chart_dx));
 
     svg.selectAll(".tick line")
     .style("stroke", "#422B25");
@@ -296,7 +312,7 @@ function updateMap() {
 
   function handleLClick(station: Station) {
     // Output the name of the clicked point
-    user_msg.value = station.name + " { X: " + station.x + " , Z: " + station.z + " }";
+    userMsg.value = station.name + " { X: " + station.x + " , Z: " + station.z + " }";
   }
 
   function handleMiddleClick(e: MouseEvent, station: Station) {
@@ -308,7 +324,7 @@ function updateMap() {
       z: station.z
     };
 
-    user_msg.value = "Draw bolt from " + startStation.name;
+    userMsg.value = "Draw bolt from " + startStation.name;
   }
 
   function handleMiddleRelease(e: MouseEvent, station: Station) {
@@ -325,7 +341,7 @@ function updateMap() {
 
     updateMap();
     updateData();
-    user_msg.value += " to " + station.name;
+    userMsg.value += " to " + station.name;
   }
 
   // @ts-ignore: I don't know it's type c:
@@ -425,10 +441,10 @@ async function onGraphChange() {
     }
   }
 
-  user_msg.value = "Processing time: " + (Date.now() - start) + "ms";
+  userMsg.value = "Processing time: " + (Date.now() - start) + "ms";
 
   if (colourGraph.value) {
-    generateColours();
+    network.value = autoColourGraph(network.value);
   }
 
   updateMap();
@@ -440,65 +456,6 @@ function updateData() {
   if (calcStats.value) {
     averageTravelTime.value = calculateAverageTravelTime(network.value);
   }
-}
-
-function generateColours() {
-  network.value.stations.forEach(station => {
-    station.colour = getRandomHexColor();
-  });
-
-  network.value.bolts.forEach(bolt => {
-    const stationB = network.value.stations.find(station => station.name === bolt.station_b.name);
-        if (stationB) {
-            bolt.colour = stationB.colour;
-        } else {
-            console.error(`Station ${bolt.station_b.name} not found in network.`);
-        }
-  });
-}
-
-function getRandomHexColor(): string {
-    // Generate a random hue value (H) between 0 and 360
-    const h = Math.floor(Math.random() * 361);
-
-    // Set constant saturation (S) and lightness (L) values
-    const s = 80; // 80%
-    const l = 74; // 74%
-
-    // Convert HSL to RGB
-    const c = (1 - Math.abs(2 * (l / 100) - 1)) * (s / 100);
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = (l / 100) - c / 2;
-
-    let r = 0, g = 0, b = 0;
-    if (h >= 0 && h < 60) {
-        r = c;
-        g = x;
-    } else if (h >= 60 && h < 120) {
-        r = x;
-        g = c;
-    } else if (h >= 120 && h < 180) {
-        g = c;
-        b = x;
-    } else if (h >= 180 && h < 240) {
-        g = x;
-        b = c;
-    } else if (h >= 240 && h < 300) {
-        r = x;
-        b = c;
-    } else if (h >= 300 && h < 360) {
-        r = c;
-        b = x;
-    }
-
-    // Convert RGB to hexadecimal
-    const rgbToHex = (rgb: number): string => {
-        const hex = Math.round(rgb * 255).toString(16);
-        return hex.length === 1 ? '0' + hex : hex;
-    };
-
-    const hexColor = `#${rgbToHex(r + m)}${rgbToHex(g + m)}${rgbToHex(b + m)}`;
-    return hexColor.toUpperCase();
 }
 
 onBeforeUnmount(() => {
@@ -560,7 +517,7 @@ onBeforeUnmount(() => {
     <NuxtLink to="/scatterplot" title="Scatter plot" class="text-xs">Scatter plot -></NuxtLink>
   </div>
 
-  <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
+  <p class="fixed bottom-0 left-0 text-sm select-none">{{ userMsg }}</p>
 
   <div class="fixed bottom-0 right-0 text-[10px] select-none">
     <p>pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3</p>

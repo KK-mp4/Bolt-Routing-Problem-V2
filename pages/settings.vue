@@ -1,6 +1,18 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core';
-useHead({ title: "Settings" });
+
+useSeoMeta({
+  title: 'Settings - Piston Bolt Network Builder',
+  description: 'Tool for generating and editing piston bolt networks for Minecraft',
+  ogTitle: 'Piston Bolt Network Builder',
+  ogDescription: 'Tool for generating and editing piston bolt networks for Minecraft',
+  ogImage: '/ogImage.webp',
+  ogUrl: 'https://bolt-routing-problem-v2.vercel.app/settings',
+  twitterTitle: 'Piston Bolt Network Builder',
+  twitterDescription: 'Tool for generating and editing piston bolt networks for Minecraft',
+  twitterImage: '/ogImage.webp',
+  twitterCard: 'summary'
+});
 
 const network = useLocalStorage('piston-bolt-network', {} as Network);
 const distanceMatrix = useLocalStorage('distance-matrix', {} as DistanceMatrix[]);
@@ -8,9 +20,8 @@ const plotData = useLocalStorage('scatter-plot', {} as PlotData[]);
 const showLabels = useLocalStorage('show-labels', false);
 const colourGraph = useLocalStorage('colour-graph', false);
 const calcStats = useLocalStorage('calculate-stats', true);
-// Also store position of graph somehow
 
-const user_msg = ref('')
+const userMsg = ref('');
 let timesSaved = 0;
 
 const fileInput: Ref<HTMLInputElement | null> = ref(null);
@@ -24,13 +35,13 @@ onMounted(async () => {
 });
 
 function onSettingsChange() {
-  user_msg.value = "Changes saved.";
+  userMsg.value = "Changes saved.";
   for (let i = 0; i < timesSaved; ++i) {
-    user_msg.value += '.';
+    userMsg.value += '.';
   }
 
   timesSaved++;
-  if (timesSaved >= 30) user_msg.value += "is this funny to you?";
+  if (timesSaved >= 30) userMsg.value += "is this funny to you?";
 }
 
 const triggerFileInput = () => {
@@ -42,7 +53,7 @@ function importNetwork(event: Event) {
   const file = (target.files as FileList)[0]; // Get the selected file
   if (file) {
     const reader = new FileReader();
-  
+
     // Define a promise for reading file
     const readFile = (file: File) => {
       return new Promise<string>((resolve, reject) => {
@@ -57,7 +68,7 @@ function importNetwork(event: Event) {
         reader.readAsText(file);
       });
     };
-  
+
     // Read the file and parse JSON
     readFile(file)
       .then((data: string) => {
@@ -101,7 +112,7 @@ function exportDistanceMatrix() {
 function convertDistanceMatrixToCSV(matrix: DistanceMatrix[]) {
   // Get station names
   const stationNames = matrix.map(entry => entry.station_name);
-  
+
   // Construct CSV header with one empty cell at the beginning
   let csvContent = ';"' + stationNames.join('";"') + '"\n';
 
@@ -163,7 +174,7 @@ class="underline cursor-pointer text-xl text-primary mb-7 font-extrabold" href="
         <BaseButton @click="exportDistanceMatrix">Export distance matrix<Icon class="ml-3 my-auto" name="bi:filetype-csv" size="16px" /></BaseButton>
         <BaseButton @click="exportScatter">Export scatter plot<Icon class="ml-3 my-auto" name="bi:filetype-csv" size="16px" /></BaseButton>
       </div>
-      <p class="fixed bottom-0 left-0 text-sm select-none">{{ user_msg }}</p>
+      <p class="fixed bottom-0 left-0 text-sm select-none">{{ userMsg }}</p>
     </div>
     <div class="flex-1 h-screen">
       <TheTable v-if="network.stations" :stations="network.stations" />
