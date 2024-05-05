@@ -145,6 +145,21 @@ function updateMap() {
     .style("stroke", (d: Bolt) => d.colour)
     .style("stroke-width", 1);
 
+  // Arrows for directed graphs
+  svg.append("defs").selectAll("marker")
+    .data(network.value.bolts.filter(bolt => bolt.directed))
+    .enter().append("marker")
+    .attr("id", (d, i) => `arrow-${i}`)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 14)
+    .attr("refY", 0)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 8)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("fill", d => d.colour)
+    .attr("d", "M0,-5L10,0L0,5");
+
   const edges_b = svg.append("g")
     .attr("id", "edges_b")
     .attr("transform", "translate(75, 0)")
@@ -157,7 +172,8 @@ function updateMap() {
     .attr("x2", (d: Bolt) => xScale(d.station_b.x))
     .attr("y2", (d: Bolt) => yScale(d.station_b.z))
     .style("stroke", (d: Bolt) => d.colour)
-    .style("stroke-width", 1);
+    .style("stroke-width", 1)
+    .attr("marker-end", (d, i) => `url(#arrow-${i})`);
 
   // Plot stations
   const vertices = svg.append("g")
@@ -359,7 +375,7 @@ function updateMap() {
 
     // Get the SVG coordinates of the mouse cursor relative to the SVG element
     const svgPoint = svgElement.createSVGPoint();
-    svgPoint.x = end[0];
+    svgPoint.x = end[0] + 1;
     svgPoint.y = end[1];
     const screenCTM = svgElement.getScreenCTM();
     const svgCursorPoint = svgPoint.matrixTransform(screenCTM.inverse());
@@ -522,8 +538,8 @@ onBeforeUnmount(() => {
       <span v-if="network.stations" class="text-accent">{{ network.stations.length }}</span>
       <span v-else class="text-accent">0</span>
     </p>
-    <p class="text-xs mt-1">Bolt length:<br /><span class="text-accent">{{ totalBoltLength }} blocks</span></p>
-    <p class="text-xs mt-1">Tunnel length:<br /><span class="text-accent">{{ totalTunnelLength }} blocks</span></p>
+    <p class="text-xs mt-1">Bolt length:<br /><span class="text-accent">{{ Math.round(totalBoltLength) }} blocks</span></p>
+    <p class="text-xs mt-1">Tunnel length:<br /><span class="text-accent">{{ Math.round(totalTunnelLength) }} blocks</span></p>
     <p v-if="calcStats" class="text-xs mt-1 mb-2">Average travel time:<br /><span class="text-accent">{{ Math.round(averageTravelTime *
       100) / 100 }} s</span></p>
 

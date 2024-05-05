@@ -43,19 +43,19 @@ const deleteStation = (index: number) => {
       <tbody>
         <tr v-for="(station, index) in props.stations" :key="index" class="even:bg-[#49291E] odd:bg-background text-accent">
           <td class="px-6 py-4 font-medium whitespace-nowrap">
-            <input aria-label="Station name" v-model="station.name" class="w-full" style="background-color: transparent;" >
+            <input v-model="station.name" aria-label="Station name" class="w-full" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4">
-            <input aria-label="Station description" v-model="station.description" class="w-full" style="background-color: transparent;" >
+            <input v-model="station.description" aria-label="Station description" class="w-full" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4" :style="{ color: station.colour }">
-            <input aria-label="Station colour" v-model="station.colour" class="w-full" style="background-color: transparent;" >
+            <input v-model="station.colour" aria-label="Station colour" class="w-full" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4">
-            <input aria-label="Station x coordinate" v-model.number="station.x" class="w-full" style="background-color: transparent;" >
+            <input v-model.number="station.x" aria-label="Station x coordinate" class="w-full" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4">
-            <input aria-label="station z coordinate" v-model.number="station.z" class="w-full" style="background-color: transparent;" >
+            <input v-model.number="station.z" aria-label="station z coordinate" class="w-full" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4">
             <button aria-label="Delete station" @click="deleteStation(index)">
