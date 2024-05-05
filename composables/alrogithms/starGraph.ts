@@ -28,12 +28,14 @@ export function generateStarGraph(network: Network, rayCount: number, mergeAt: s
   }
 
   const stationB = {
-    name: "Mergeing point",
+    name: "Junction №0",
     description: '',
-    colour: '',
+    colour: '#f2a788',
     x: x,
     z: z,
   };
+
+  network.stations.push(stationB);
 
   for (let i = 0; i < numStations; ++i) {
     const stationA = stations[i];
@@ -49,9 +51,9 @@ export function generateStarGraph(network: Network, rayCount: number, mergeAt: s
 
     network.bolts.push({
       directed: false,
-      station_a: stationA,
+      station_a: stationB,
       turn: turn,
-      station_b: stationB,
+      station_b: stationA,
       length: chebyshevDistance(stationA, stationB),
       colour: '#8f7f10',
     });

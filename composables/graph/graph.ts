@@ -164,3 +164,8 @@ function stringToDegrees(seed: string): number {
 
   return Math.abs(hash % 360);
 }
+
+export function clearJunctions(network: Network): Network {
+  network.stations = network.stations.filter(station => !station.name.includes("Junction №"));
+  return network;
+}

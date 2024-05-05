@@ -427,6 +427,8 @@ function updateMap() {
 async function onGraphChange() {
   const start = Date.now();
 
+  clearJunctions(network.value);
+
   switch(graphType.value) {
     case "None": {
       network.value.bolts = [];
