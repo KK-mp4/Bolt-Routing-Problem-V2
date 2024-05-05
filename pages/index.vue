@@ -18,6 +18,7 @@ useSeoMeta({
 const userMsg = ref(''); // Message that is displayed at the bottom left corner of the screen
 const network = useLocalStorage('piston-bolt-network', {} as Network);  // Object containing stations and bolts
 let startStation: Station = <Station>{};  // Starting station for manual connection
+let startStationUnscaled: Station = <Station>{};
 let endPoint: number[] = [];  // Ending station x, z
 let middleButtonPressed = false;  // Toggle to detect if user is dragging mouse3
 const totalBoltLength = ref(0);
@@ -302,12 +303,6 @@ function updateMap() {
         .attr("y1", (d: Bolt) => new_yScale(d.turn.z))
         .attr("x2", (d: Bolt) => new_xScale(d.station_b.x))
         .attr("y2", (d: Bolt) => new_yScale(d.station_b.z));
-
-    if (startStation.name !== undefined) {
-      // Calculate the new x and y coordinates of the startStation
-      // startStation.x = new_xScale(startStation.x);
-      // startStation.z = new_yScale(startStation.z);
-    }
   }
 
   function handleLClick(station: Station) {
@@ -324,16 +319,27 @@ function updateMap() {
       z: station.z
     };
 
+    startStationUnscaled.x = station.x;
+    startStationUnscaled.z = station.z;
+
     userMsg.value = "Draw bolt from " + startStation.name;
   }
 
   function handleMiddleRelease(e: MouseEvent, station: Station) {
     if (!startStation.name || station.name === startStation.name) return;
 
+    const station_a = {
+      name: startStationUnscaled.name,
+      description: startStationUnscaled.description,
+      colour: startStationUnscaled.colour,
+      x: startStationUnscaled.x,
+      z: startStationUnscaled.z
+    };
+
     network.value.bolts.push({
       directed: false,
-      station_a: startStation,
-      turn: calculateTurn(startStation, station),
+      station_a: station_a,
+      turn: calculateTurn(station_a, station),
       station_b: station,
       length: chebyshevDistance(startStation, station),
       colour: "#8f7f10"
@@ -345,7 +351,7 @@ function updateMap() {
   }
 
   // @ts-ignore: I don't know it's type c:
-  function drawTempLine(svg, startStation: Station, end: number[]) {
+  function drawTempLine(svg, startStation2: Station, end: number[]) {
     svg.select("#temp-line").remove();
 
     // Get the SVG element
@@ -353,7 +359,7 @@ function updateMap() {
 
     // Get the SVG coordinates of the mouse cursor relative to the SVG element
     const svgPoint = svgElement.createSVGPoint();
-    svgPoint.x = end[0] + 1;
+    svgPoint.x = end[0];
     svgPoint.y = end[1];
     const screenCTM = svgElement.getScreenCTM();
     const svgCursorPoint = svgPoint.matrixTransform(screenCTM.inverse());
@@ -370,9 +376,18 @@ function updateMap() {
       z: yScale.invert(svgEndY)
     }
 
-    const turn = calculateTurn(startStation, endStation);
+    const new_xScale = savedTransform.rescaleX(xScale);
+    const new_yScale = savedTransform.rescaleY(yScale);
+
+    startStation2.x = new_xScale(startStationUnscaled.x);
+    startStation2.z = new_yScale(startStationUnscaled.z);
+
+    endStation.x = xScale(endStation.x)
+    endStation.z = yScale(endStation.z)
+
+    const turn = calculateTurn(startStation2, endStation);
     const lineGroup = [
-      { start: startStation, end: turn },
+      { start: startStation2, end: turn },
       { start: turn, end: endStation }
     ]
 
@@ -383,10 +398,10 @@ function updateMap() {
       .data(lineGroup)
       .enter()
       .append("line")
-      .attr("x1", (d: {start: Station; end: Station}) => xScale(d.start.x))
-      .attr("y1", (d: {start: Station; end: Station}) => yScale(d.start.z))
-      .attr("x2", (d: {start: Station; end: Station}) => xScale(d.end.x))
-      .attr("y2", (d: {start: Station; end: Station}) => yScale(d.end.z))
+      .attr("x1", (d: {start: Station; end: Station}) => (d.start.x))
+      .attr("y1", (d: {start: Station; end: Station}) => (d.start.z))
+      .attr("x2", (d: {start: Station; end: Station}) => (d.end.x))
+      .attr("y2", (d: {start: Station; end: Station}) => (d.end.z))
       .style("stroke", "gray")
       .style("stroke-width", 2)
       .style("stroke-dasharray", "5 5");
