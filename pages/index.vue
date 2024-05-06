@@ -345,19 +345,19 @@ function updateMap() {
     if (!startStation.name || station.name === startStation.name) return;
 
     const station_a = {
-      name: startStationUnscaled.name,
-      description: startStationUnscaled.description,
-      colour: startStationUnscaled.colour,
+      name: startStation.name,
+      description: '',
+      colour: '',
       x: startStationUnscaled.x,
       z: startStationUnscaled.z
     };
 
     network.value.bolts.push({
       directed: false,
-      station_a: station_a,
+      station_a: station_a as StationShort,
       turn: calculateTurn(station_a, station),
-      station_b: station,
-      length: chebyshevDistance(startStation, station),
+      station_b: station as StationShort,
+      length: chebyshevDistance(startStationUnscaled, station),
       colour: "#8f7f10"
     });
 
@@ -375,7 +375,7 @@ function updateMap() {
 
     // Get the SVG coordinates of the mouse cursor relative to the SVG element
     const svgPoint = svgElement.createSVGPoint();
-    svgPoint.x = end[0] + 1;
+    svgPoint.x = end[0] + 2;
     svgPoint.y = end[1];
     const screenCTM = svgElement.getScreenCTM();
     const svgCursorPoint = svgPoint.matrixTransform(screenCTM.inverse());
@@ -425,6 +425,16 @@ function updateMap() {
 }
 
 async function onGraphChange() {
+  if (graphType.value === '') {
+    if (colourGraph.value) {
+      network.value = autoColourGraph(network.value);
+    }
+
+    updateMap();
+    updateData();
+    return;
+  }
+
   const start = Date.now();
 
   clearJunctions(network.value);
@@ -447,10 +457,16 @@ async function onGraphChange() {
 
     case "Nearest neighbor": {
       await generateNNGraphASYNC(network.value, (path: Network) => {
-        network.value = path; // Update the network value with the new shortest path
-        updateMap(); // Update the map whenever a new shortest path is found
-        // updateData(); // Update data as needed
+        if (colourGraph.value) {
+          network.value = autoColourGraph(path);
+        } else {
+          network.value = path;
+        }
+
+        updateMap();
+        updateData();
       });
+
       break;
     }
 
@@ -540,8 +556,8 @@ onBeforeUnmount(() => {
       <span v-if="network.stations" class="text-accent">{{ network.stations.length }}</span>
       <span v-else class="text-accent">0</span>
     </p>
-    <p class="text-xs mt-1">Bolt length:<br /><span class="text-accent">{{ Math.round(totalBoltLength) }} blocks</span></p>
-    <p class="text-xs mt-1">Tunnel length:<br /><span class="text-accent">{{ Math.round(totalTunnelLength) }} blocks</span></p>
+    <p class="text-xs mt-1">Bolt length:<br /><span class="text-accent">{{ totalBoltLength }} blocks</span></p>
+    <p class="text-xs mt-1">Tunnel length:<br /><span class="text-accent">{{ totalTunnelLength }} blocks</span></p>
     <p v-if="calcStats" class="text-xs mt-1 mb-2">Average travel time:<br /><span class="text-accent">{{ Math.round(averageTravelTime *
       100) / 100 }} s</span></p>
 

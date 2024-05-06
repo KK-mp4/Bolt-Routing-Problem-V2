@@ -49,13 +49,13 @@ const deleteStation = (index: number) => {
             <input v-model="station.description" aria-label="Station description" class="w-full" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4" :style="{ color: station.colour }">
-            <input v-model="station.colour" aria-label="Station colour" class="w-full" style="background-color: transparent;" >
+            <input v-model="station.colour" aria-label="Station colour" class="w-full uppercase" style="background-color: transparent;" >
           </td>
           <td class="px-6 py-4">
-            <input v-model.number="station.x" aria-label="Station x coordinate" class="w-full" style="background-color: transparent;" >
+            <input v-model.number="station.x" aria-label="Station x coordinate" class="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" style="background-color: transparent;" type="number" >
           </td>
           <td class="px-6 py-4">
-            <input v-model.number="station.z" aria-label="station z coordinate" class="w-full" style="background-color: transparent;" >
+            <input v-model.number="station.z" aria-label="station z coordinate" class="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" style="background-color: transparent;" type="number" >
           </td>
           <td class="px-6 py-4">
             <button aria-label="Delete station" @click="deleteStation(index)">

@@ -316,6 +316,13 @@
             "z": -7
         },
         {
+            "name": "Ice Spikes",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 622,
+            "z": 1128
+        },
+        {
             "name": "Junction №1",
             "description": "",
             "colour": "#888888",
