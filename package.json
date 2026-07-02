@@ -1,27 +1,39 @@
 {
-  "name": "nuxt-app",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate && del /Q/S docs && Xcopy \".output/public\" \"docs\"  /s /e /y /i",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
-  },
-  "dependencies": {
-    "@nuxt/eslint": "^0.3.10",
-    "@nuxtjs/tailwindcss": "^6.12.0",
-    "@types/d3": "^7.4.3",
-    "@typescript-eslint/parser": "^7.8.0",
-    "d3": "^7.9.0",
-    "nuxt": "^3.11.2",
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
-  },
-  "devDependencies": {
-    "nuxt-icon": "^0.6.10"
-  }
+    "name": "nuxt-app",
+    "private": true,
+    "type": "module",
+    "packageManager": "pnpm@11.9.0",
+    "engines": {
+        "node": "24.x"
+    },
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nuxt dev",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare",
+        "lint": "eslint . --fix",
+        "format": "prettier --write .",
+        "typecheck": "nuxt typecheck"
+    },
+    "dependencies": {
+        "@nuxt/icon": "^2.2.5",
+        "@vueuse/core": "^14.3.0",
+        "@nuxtjs/tailwindcss": "^6.14.0",
+        "d3": "^7.9.0",
+        "nuxt": "^4.4.8",
+        "vue": "^3.5.39",
+        "vue-router": "^5.1.0"
+    },
+    "devDependencies": {
+        "@nuxt/eslint": "^1.16.0",
+        "@types/d3": "^7.4.3",
+        "eslint": "^10.6.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.6",
+        "prettier": "^3.9.4",
+        "prettier-plugin-tailwindcss": "^0.8.0",
+        "typescript": "^5.9.3",
+        "vue-tsc": "^3.3.6"
+    }
 }

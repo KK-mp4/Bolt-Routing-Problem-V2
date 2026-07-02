@@ -6,6 +6,12 @@
 .cache
 dist
 
+# Static export / generated site
+docs
+
+# Vercel
+.vercel
+
 # Node dependencies
 node_modules
 
@@ -22,3 +28,7 @@ logs
 .env
 .env.*
 !.env.example
+
+# IDE
+.vscode
+.pnpm-store*

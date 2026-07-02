@@ -1,0 +1,17 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Generated static site
+docs
+
+# Node dependencies
+node_modules
+
+# Data fixtures
+public/data
+pnpm-lock.yaml
