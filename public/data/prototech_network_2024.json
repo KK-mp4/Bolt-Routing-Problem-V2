@@ -1,0 +1,397 @@
+{
+    "stations": [
+        {
+            "name": "Spawn",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 5,
+            "z": -26
+        },
+        {
+            "name": "Iron Farm TEMP",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 16,
+            "z": -30
+        },
+        {
+            "name": "2k Perimeter TEMP",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -81,
+            "z": -134
+        },
+        {
+            "name": "Misc Circle Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -10470,
+            "z": 3648
+        },
+        {
+            "name": "Cold Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -716,
+            "z": 891
+        },
+        {
+            "name": "oReNG",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1369,
+            "z": -319
+        },
+        {
+            "name": "Jungle Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1112,
+            "z": -1008
+        },
+        {
+            "name": "GMF Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -860,
+            "z": -73
+        },
+        {
+            "name": "Empty Circle Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -471,
+            "z": -81
+        },
+        {
+            "name": "Ice Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -244,
+            "z": -135
+        },
+        {
+            "name": "Music Disc Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -168,
+            "z": -50
+        },
+        {
+            "name": "Horizontal Quarry",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -274,
+            "z": 130
+        },
+        {
+            "name": "Sand Monster",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -166,
+            "z": 22
+        },
+        {
+            "name": "Quad Witch Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -138,
+            "z": -267
+        },
+        {
+            "name": "Mooshroom Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 320,
+            "z": -226
+        },
+        {
+            "name": "Flower Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 35,
+            "z": 163
+        },
+        {
+            "name": "End Portal Sand Duper",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 32,
+            "z": 129
+        },
+        {
+            "name": "Tree Farm Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 809,
+            "z": 452
+        },
+        {
+            "name": "Lightning Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1030,
+            "z": 850
+        },
+        {
+            "name": "Dual Witch Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1815,
+            "z": 174
+        },
+        {
+            "name": "Flat Bedrock Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1175,
+            "z": 625
+        },
+        {
+            "name": "ITT / IF Switch",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 5898,
+            "z": 5636
+        },
+        {
+            "name": "Barrier Block",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 6116,
+            "z": 6293
+        },
+        {
+            "name": "Falling Block Cluster Chunks",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1100,
+            "z": 2262
+        },
+        {
+            "name": "Falling Block Setup #1",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1232,
+            "z": 2616
+        },
+        {
+            "name": "Falling Block Setup #2",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1077,
+            "z": 2824
+        },
+        {
+            "name": "Nether Mob Switch",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1141,
+            "z": 1308
+        },
+        {
+            "name": "RNG Mob Farm Cluster Chunks",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 131,
+            "z": 153
+        },
+        {
+            "name": "RNG Mob Farm Setup",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 61,
+            "z": 94
+        },
+        {
+            "name": "Passive Mob Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 104,
+            "z": -42
+        },
+        {
+            "name": "Theme Park",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 158,
+            "z": -57
+        },
+        {
+            "name": "Museum",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 114,
+            "z": -150
+        },
+        {
+            "name": "Villager Island",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 193,
+            "z": -160
+        },
+        {
+            "name": "Elytra Course",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 237,
+            "z": -29
+        },
+        {
+            "name": "Snowball + Leaf Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 341,
+            "z": -15
+        },
+        {
+            "name": "Johnnys Ladders",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -21,
+            "z": -298
+        },
+        {
+            "name": "Skeltons Archive",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -315,
+            "z": -202
+        },
+        {
+            "name": "Skeleton Archive",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -216,
+            "z": -86
+        },
+        {
+            "name": "Old Storage",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -541,
+            "z": 499
+        },
+        {
+            "name": "Camps Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 12540,
+            "z": 12519
+        },
+        {
+            "name": "manrocks Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -512,
+            "z": -2167
+        },
+        {
+            "name": "jonny595 Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 538,
+            "z": -2115
+        },
+        {
+            "name": "unsci Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 14,
+            "z": -1201
+        },
+        {
+            "name": "haph Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1188,
+            "z": -968
+        },
+        {
+            "name": "Very Strange Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 419,
+            "z": -707
+        },
+        {
+            "name": "pineapple Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -176,
+            "z": -498
+        },
+        {
+            "name": "SGB Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -538,
+            "z": 1
+        },
+        {
+            "name": "acheron Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -99,
+            "z": -49
+        },
+        {
+            "name": "ncoylers Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -395,
+            "z": 555
+        },
+        {
+            "name": "Shitpost Area",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 735,
+            "z": 708
+        },
+        {
+            "name": "Big Boi Map",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 163,
+            "z": 38
+        },
+        {
+            "name": "Partial perimeter and Netherrack Storage",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -10195,
+            "z": 3619
+        },
+        {
+            "name": "ilmango's Gold Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -10525,
+            "z": 3735
+        },
+        {
+            "name": "Wither Skeleton Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1985,
+            "z": -1258
+        },
+        {
+            "name": "Ray's / Methodzz's Wither Skeleton Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1324,
+            "z": -18309
+        },
+        {
+            "name": "Nether Quarry",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1150,
+            "z": -400
+        }
+    ],
+    "bolts": []
+}

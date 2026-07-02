@@ -22,15 +22,16 @@ onMounted(() => {
   window.addEventListener('resize', drawPlot);
 
   plotData.value = [
-    { graph_name: "Current network* (not all stations connected)", length: 14590, time: 77.43 },
-    { graph_name: "Star graph*", length: 56284, time: 56.04 },
-    { graph_name: "Complete graph", length: 1012534, time: 44.88 },
-    { graph_name: "MST nearest neighbour", length: 12560, time: 154.42 },
-    { graph_name: "Hamiltonian cycle", length: 14328, time: 126 },
-    { graph_name: "Prim's algorithm", length: 8949, time: 71.57 },
+    // { graph_name: "Current network* (not all stations connected)", length: 14590, time: 77.43 },
+    { graph_name: "Star graph*", length: 22452, time: 48.81 },
+    { graph_name: "Complete graph", length: 796874, time: 40.25 },
+    { graph_name: "MST nearest neighbour", length: 12467, time: 135.04 },
+    { graph_name: "Hamiltonian cycle", length: 14239, time: 126 },
+    { graph_name: "Prim's algorithm", length: 8895, time: 60.63 },
     // { graph_name: "Prim's algorithm", length: 8899, time: 77.05 },
     { graph_name: "Prim's algorithm with loop", length: 9887, time: 61.72 },
-    { graph_name: "Kruskal's algorithm", length: 8949, time: 71.71 }
+    { graph_name: "Kruskal's algorithm", length: 8895, time: 60.63 },
+    { graph_name: "Stainer tree", length: 8362, time: 49.21 }
   ]
 
   drawPlot();

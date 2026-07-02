@@ -62,6 +62,8 @@ NN is a quick approximation to finding out true MST. The graph this algorithm pr
 [Steiner tree problem](https://en.wikipedia.org/wiki/Steiner_tree_problem) consists of finding the minimum tree that includes specific points and, if necessary, uses a number
 of auxiliary points to minimize the tree length (unlike MST). This problem is NP-hard, however [heuristic solution](https://www.textroad.com/pdf/JBASR/J.%20Basic.%20Appl.%20Sci.%20Res.,%203(1s)611-613,%202013.pdf) exists.
 
+Since piston bolts move in 8 directions (a diagonal step is free), edge length here is the Chebyshev distance, not the Euclidean one. This makes it a Chebyshev (octilinear) variant of the Steiner tree problem rather than the classical Euclidean one. Chebyshev distance equals Manhattan distance under a 45° rotation (`u = x + z`, `v = x - z`), so the solver uses the [Iterated 1-Steiner](https://en.wikipedia.org/wiki/Steiner_tree_problem#Steiner_ratio) heuristic on the rotated (octilinear) [Hanan grid](https://en.wikipedia.org/wiki/Hanan_grid): it repeatedly inserts the candidate junction point that reduces the minimum spanning tree cost the most, then prunes junctions that end up with degree less than 3.
+
 ## Distance matrix heatmap
 To calculate average travel time in a given network I use [Floyd-Warshall algorithm](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm) that generates this matrix of shortest path between any set of points.  
 

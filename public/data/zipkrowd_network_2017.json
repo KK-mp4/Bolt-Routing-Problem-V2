@@ -1,0 +1,208 @@
+{
+    "stations": [
+        {
+            "name": "Spawn",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 26,
+            "z": 31
+        },
+        {
+            "name": "preisi's Base Stronghold #2",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 13,
+            "z": 118
+        },
+        {
+            "name": "Wubbi's Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 21,
+            "z": 60
+        },
+        {
+            "name": "Small Ice Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 38,
+            "z": 84
+        },
+        {
+            "name": "Mooshroom Island",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 257,
+            "z": 678
+        },
+        {
+            "name": "Ship",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 0,
+            "z": -25
+        },
+        {
+            "name": "Castle",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1,
+            "z": -58
+        },
+        {
+            "name": "Tripple Mutant Spawner",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -8,
+            "z": -73
+        },
+        {
+            "name": "Melon Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -9,
+            "z": -124
+        },
+        {
+            "name": "oldGanon Map",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 0,
+            "z": -19
+        },
+        {
+            "name": "Quad Witch Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 119,
+            "z": -72
+        },
+        {
+            "name": "Squid Perimeter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 109,
+            "z": -99
+        },
+        {
+            "name": "Cobble Storage",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 120,
+            "z": -120
+        },
+        {
+            "name": "Cave Spider Mob Switch",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 112,
+            "z": -328
+        },
+        {
+            "name": "Zombie Spawner",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 126,
+            "z": -76
+        },
+        {
+            "name": "Stronghold",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 125,
+            "z": -58
+        },
+        {
+            "name": "Mooshroom farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 258,
+            "z": -90
+        },
+        {
+            "name": "Sheep Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 356,
+            "z": -104
+        },
+        {
+            "name": "GMF and 2x2 Spruce Tree Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 222,
+            "z": -49
+        },
+        {
+            "name": "Sugarc Cane Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 205,
+            "z": 71
+        },
+        {
+            "name": "Rubix Cube",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 130,
+            "z": 213
+        },
+        {
+            "name": "Trading Hall",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 79,
+            "z": 28
+        },
+        {
+            "name": "Someones Base",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -20,
+            "z": 118
+        },
+        {
+            "name": "Wither Skeleton Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -180,
+            "z": -237
+        },
+        {
+            "name": "Wither Boss Killer",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 0,
+            "z": -19
+        },
+        {
+            "name": "oldGanon's Vault",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 23,
+            "z": -88
+        },
+        {
+            "name": "Pigman Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 109,
+            "z": -77
+        },
+        {
+            "name": "Spruce Tree Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 92,
+            "z": -189
+        },
+        {
+            "name": "Ghast Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 109,
+            "z": 247
+        }
+    ],
+    "bolts": []
+}

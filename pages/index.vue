@@ -485,6 +485,11 @@ async function onGraphChange() {
       break;
     }
 
+    case "Steiner tree": {
+      network.value = runIteratedSteinerTree(network.value);
+      break;
+    }
+
     default: {
       break;
     }
@@ -531,6 +536,7 @@ onBeforeUnmount(() => {
       <!-- <option value="Boruvka's algorithm">Boruvka's algorithm (WIP)</option> -->
       <option value="Prim's algorithm">Prim's algorithm (WIP)</option>
       <option value="Kruskal's algorithm">Kruskal's algorithm (WIP)</option>
+      <option value="Steiner tree">Steiner tree (WIP)</option>
       <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
       <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
       <!-- <option value="Euclidean Steiner tree">Euclidean Steiner tree (WIP)</option> -->

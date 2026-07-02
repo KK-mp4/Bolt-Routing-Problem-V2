@@ -1,0 +1,12 @@
+{
+  "stations": [
+      {
+          "name": "",
+          "description": "",
+          "colour": "#F2A788",
+          "x": 0,
+          "z": 0
+      }
+  ],
+  "bolts": []
+}

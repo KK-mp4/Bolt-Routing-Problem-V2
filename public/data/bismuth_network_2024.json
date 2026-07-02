@@ -1,0 +1,215 @@
+{
+    "stations": [
+        {
+            "name": "Main Storage (tilt) (Hole in roof)",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -526,
+            "z": -318
+        },
+        {
+            "name": "Dual Witch (hole in roof)",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 403,
+            "z": -11
+        },
+        {
+            "name": "Spider Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 1394,
+            "z": 516
+        },
+        {
+            "name": "Empty Nether Peri",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -623,
+            "z": 135
+        },
+        {
+            "name": "Piggyman Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -121,
+            "z": 53
+        },
+        {
+            "name": "Wither Killers",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -154,
+            "z": -149
+        },
+        {
+            "name": "Tree Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -415,
+            "z": -154
+        },
+        {
+            "name": "Concrete Converter",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -527,
+            "z": -39
+        },
+        {
+            "name": "Giant Spruce Chopping Area",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -743,
+            "z": 475
+        },
+        {
+            "name": "Old Record Farm ~~",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -3220,
+            "z": -1384
+        },
+        {
+            "name": "Bahrain International Circuit",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -1166,
+            "z": -304
+        },
+        {
+            "name": "Spawn",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 15,
+            "z": 8
+        },
+        {
+            "name": "Creeper",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 148,
+            "z": 83
+        },
+        {
+            "name": "Witch Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -41,
+            "z": -47
+        },
+        {
+            "name": "Sivahole",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -658,
+            "z": 150
+        },
+        {
+            "name": "Deb's house",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 50,
+            "z": -197
+        },
+        {
+            "name": "End Portal",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 33,
+            "z": 199
+        },
+        {
+            "name": "Passive Old",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -91,
+            "z": -53
+        },
+        {
+            "name": "Iron Farm (ice line under roof)",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 0,
+            "z": 690
+        },
+        {
+            "name": "Witch RNG",
+            "description": "",
+            "colour": "#F2A788",
+            "x": 770,
+            "z": 630
+        },
+        {
+            "name": "Yuri Peri",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -764,
+            "z": 114
+        },
+        {
+            "name": "Guardian Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -148,
+            "z": 31
+        },
+        {
+            "name": "Mobcap Peri",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -81,
+            "z": 1421
+        },
+        {
+            "name": "ORENG Grid & Mapart Area",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -89,
+            "z": 1609
+        },
+        {
+            "name": "Furnace Array",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -623,
+            "z": -260
+        },
+        {
+            "name": "Snow Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -557,
+            "z": -474
+        },
+        {
+            "name": "Obby Converter & New Passive",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -463,
+            "z": -473
+        },
+        {
+            "name": "Farm Of Cobbler",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -610,
+            "z": -512
+        },
+        {
+            "name": "Husk RNG",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -636,
+            "z": -203
+        },
+        {
+            "name": "Squid Farm",
+            "description": "",
+            "colour": "#F2A788",
+            "x": -557,
+            "z": -294
+        }
+    ],
+    "bolts": []
+}
