@@ -6,9 +6,6 @@
 .cache
 dist
 
-# Static export / generated site
-docs
-
 # Vercel
 .vercel
 
