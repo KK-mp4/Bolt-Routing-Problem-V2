@@ -3,6 +3,16 @@ export default defineNuxtConfig({
     compatibilityDate: '2026-07-02',
     devtools: { enabled: false },
     ssr: false,
+    app: {
+        head: {
+            meta: [
+                {
+                    name: 'google-site-verification',
+                    content: 'e9_rTXWGwQUW6hQNlKSo1ZmfDu-VcaYfNpif_MyeS9w',
+                },
+            ],
+        },
+    },
     modules: ['@nuxtjs/tailwindcss', '@nuxt/icon', '@nuxt/eslint'],
     imports: {
         dirs: ['composables/**'],
