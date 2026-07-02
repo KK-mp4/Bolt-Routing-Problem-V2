@@ -130,6 +130,65 @@ export function runIteratedSteinerTree(network: Network): Network {
     return buildNetwork(terminals, pruned.points, pruned.mst.edges)
 }
 
+// Async variant that yields to the event loop between iterations so the heavy
+// Iterated 1-Steiner search doesn't lock the UI. Progressively reports the best
+// network found so far, mirroring generateNNGraphASYNC.
+export async function runIteratedSteinerTreeASYNC(
+    network: Network,
+    callback: (result: Network) => void
+): Promise<void> {
+    const terminals = network.stations.slice()
+    const n = terminals.length
+
+    if (n <= 2) {
+        // Nothing for a Steiner point to improve.
+        callback(buildNetwork(terminals, terminals, mstCost(terminals).edges))
+        return
+    }
+
+    const candidates = hananCandidates(terminals)
+
+    const current = terminals.slice()
+    let best = mstCost(current)
+    const maxJunctions = n // Safety cap; a Steiner tree needs at most n - 2.
+
+    // Show the plain MST before any junctions are inserted.
+    callback(buildNetwork(terminals, current, best.edges))
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    while (current.length - n < maxJunctions) {
+        let bestGain = 0
+        let bestCandidateIdx = -1
+        let bestResult: MstResult | null = null
+
+        for (let c = 0; c < candidates.length; ++c) {
+            const trial = current.concat(candidates[c])
+            const result = mstCost(trial)
+            const gain = best.cost - result.cost
+            if (gain > bestGain) {
+                bestGain = gain
+                bestCandidateIdx = c
+                bestResult = result
+            }
+        }
+
+        if (bestCandidateIdx === -1 || !bestResult) break // No improvement left.
+
+        current.push(candidates[bestCandidateIdx])
+        candidates.splice(bestCandidateIdx, 1)
+        best = bestResult
+
+        // Report progress and hand control back to the browser.
+        callback(buildNetwork(terminals, current, best.edges))
+        await new Promise(resolve => setTimeout(resolve, 0))
+    }
+
+    // Prune added junctions that ended up with degree < 3; they add no value.
+    const pruned = prune(current, n)
+
+    callback(buildNetwork(terminals, pruned.points, pruned.mst.edges))
+}
+
 function prune(
     points: Station[],
     terminalCount: number

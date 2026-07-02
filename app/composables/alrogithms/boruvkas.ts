@@ -12,8 +12,8 @@ export function runBoruvkasAlgorithm(
     )
 
     // Initialize an array to store the minimum edge connecting each component
-    const minEdge: { station_a: number; station_b: number; length: number }[] =
-        Array(numStations).fill(null)
+    type MinEdge = { station_a: number; station_b: number; length: number }
+    const minEdge: (MinEdge | null)[] = Array(numStations).fill(null)
 
     // Keep track of the total number of components
     let numComponents = numStations
@@ -32,9 +32,10 @@ export function runBoruvkasAlgorithm(
                 const rep2 = findRepresentative(neighbor, representatives)
 
                 const weight = getWeight(i, neighbor, stations, adjacencyList)
+                const currentMin = minEdge[rep1]
                 if (
                     rep1 !== rep2 &&
-                    (minEdge[rep1] === null || weight < minEdge[rep1].length)
+                    (currentMin === null || weight < currentMin.length)
                 ) {
                     minEdge[rep1] = {
                         station_a: i,
@@ -97,7 +98,10 @@ function getWeight(
 ): number {
     const neighborIndex = adjacencyList[stationIndex1].indexOf(stationIndex2)
     if (neighborIndex !== -1) {
-        return stations[stationIndex1].weights[neighborIndex]
+        return chebyshevDistance(
+            stations[stationIndex1],
+            stations[stationIndex2]
+        )
     }
     return Infinity // Weight not found (should not happen)
 }

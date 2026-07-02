@@ -29,6 +29,12 @@ onMounted(() => {
     drawHeatmap()
 })
 
+interface HeatmapCell {
+    value: number
+    rowIndex: number
+    colIndex: number
+}
+
 function drawHeatmap() {
     const distMatrix = document.getElementById('distance-matrix')
     if (distMatrix !== null) {
@@ -86,17 +92,17 @@ function drawHeatmap() {
             ) || 1,
         ])
 
-    const mouseover = function (event: MouseEvent, d: any) {
+    const mouseover = function (event: MouseEvent, d: HeatmapCell) {
         const value = d.value !== null ? d.value + ' blocks' : 'does not exist'
         userMsg.value = `Shortest path from ${labels[d.rowIndex]} to ${labels[d.colIndex]} - ${value}`
     }
 
-    const mousemove = function (event: MouseEvent, d: any) {
+    const mousemove = function (event: MouseEvent, d: HeatmapCell) {
         const value = d.value !== null ? d.value + ' blocks' : 'does not exist'
         userMsg.value = `Shortest path from ${labels[d.rowIndex]} to ${labels[d.colIndex]} - ${value}`
     }
 
-    const mouseleave = function (event: MouseEvent) {
+    const mouseleave = function () {
         userMsg.value = ''
     }
 
@@ -106,22 +112,28 @@ function drawHeatmap() {
         .append('g')
         .selectAll('rect')
         .data((d: DistanceMatrix, rowIndex: number) => {
-            return d.values.map((value: number, colIndex: number) => ({
-                value: value,
-                rowIndex: rowIndex,
-                colIndex: colIndex,
-            }))
+            return d.values.map(
+                (value: number, colIndex: number): HeatmapCell => ({
+                    value: value,
+                    rowIndex: rowIndex,
+                    colIndex: colIndex,
+                })
+            )
         })
         .enter()
         .append('rect')
-        .attr('x', (d: any) => String(x(labels[d.colIndex])))
-        .attr('y', (d: any) => String(y(labels[d.rowIndex])))
+        .attr('x', (d: HeatmapCell) => String(x(labels[d.colIndex])))
+        .attr('y', (d: HeatmapCell) => String(y(labels[d.rowIndex])))
         .attr('width', x.bandwidth())
         .attr('height', y.bandwidth())
-        .style('fill', (d: any) => myColor(d.value))
-        .on('mouseover', (event: MouseEvent, d: any) => mouseover(event, d))
-        .on('mousemove', (event: MouseEvent, d: any) => mousemove(event, d))
-        .on('mouseleave', (event: MouseEvent) => mouseleave(event))
+        .style('fill', (d: HeatmapCell) => myColor(d.value))
+        .on('mouseover', (event: MouseEvent, d: HeatmapCell) =>
+            mouseover(event, d)
+        )
+        .on('mousemove', (event: MouseEvent, d: HeatmapCell) =>
+            mousemove(event, d)
+        )
+        .on('mouseleave', () => mouseleave())
 }
 
 function copyHeatmap() {
@@ -138,15 +150,17 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-    <NuxtLink
-        to="/"
-        title="Go back to main page"
-        class="fixed left-3 top-3 text-xs"
-        >← Back</NuxtLink
-    >
-    <BaseButton class="fixed left-3 top-10 !w-[70px]" @click="copyHeatmap"
-        >Copy</BaseButton
-    >
-    <p class="fixed bottom-0 left-0 select-none text-sm">{{ userMsg }}</p>
-    <div id="distance-matrix" class="h-full w-full p-0" />
+    <div>
+        <NuxtLink
+            to="/"
+            title="Go back to main page"
+            class="fixed left-3 top-3 text-xs"
+            >← Back</NuxtLink
+        >
+        <BaseButton class="fixed left-3 top-10 !w-[70px]" @click="copyHeatmap"
+            >Copy</BaseButton
+        >
+        <p class="fixed bottom-0 left-0 select-none text-sm">{{ userMsg }}</p>
+        <div id="distance-matrix" class="h-full w-full p-0" />
+    </div>
 </template>

@@ -236,7 +236,9 @@ function convertPlotDataToCSV(data: PlotData[]) {
             </p>
         </div>
         <div class="h-screen flex-1">
-            <TheTable v-if="network.stations" :stations="network.stations" />
+            <TheTable
+                v-if="network.stations"
+                v-model:stations="network.stations" />
         </div>
     </div>
 </template>

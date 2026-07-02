@@ -1,20 +1,21 @@
 <script setup lang="ts">
-const props = defineProps<{
-    stations: Station[]
-}>()
+const stations = defineModel<Station[]>('stations', { required: true })
 
 const addNewStation = () => {
-    props.stations.push({
-        name: 'New Station',
-        description: '',
-        colour: '#f2a788',
-        x: 0,
-        z: 0,
-    })
+    stations.value = [
+        ...stations.value,
+        {
+            name: 'New Station',
+            description: '',
+            colour: '#f2a788',
+            x: 0,
+            z: 0,
+        },
+    ]
 }
 
 const deleteStation = (index: number) => {
-    props.stations.splice(index, 1)
+    stations.value = stations.value.filter((_, i) => i !== index)
 }
 </script>
 <template>
@@ -32,7 +33,7 @@ const deleteStation = (index: number) => {
             </thead>
             <tbody>
                 <tr
-                    v-for="(station, index) in props.stations"
+                    v-for="(station, index) in stations"
                     :key="index"
                     class="text-accent odd:bg-background even:bg-[#49291E]">
                     <td class="whitespace-nowrap px-6 py-4 font-medium">

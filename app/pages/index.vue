@@ -20,8 +20,8 @@ useSeoMeta({
 
 const userMsg = ref('') // Message that is displayed at the bottom left corner of the screen
 const network = useLocalStorage('piston-bolt-network', {} as Network) // Object containing stations and bolts
-let startStation: Station = <Station>{} // Starting station for manual connection
-let startStationUnscaled: Station = <Station>{}
+let startStation: Station = {} as Station // Starting station for manual connection
+const startStationUnscaled: Station = {} as Station
 let endPoint: number[] = [] // Ending station x, z
 let middleButtonPressed = false // Toggle to detect if user is dragging mouse3
 const totalBoltLength = ref(0)
@@ -239,14 +239,14 @@ function updateMap() {
         .style('visibility', showLabels.value ? 'visible' : 'hidden')
 
     // Create a zoom behavior
-    const zoomBehavior = d3.zoom().on('zoom', zoom)
+    const zoomBehavior = d3.zoom<SVGSVGElement, unknown>().on('zoom', zoom)
 
     // Call the zoom behavior on the SVG element
-    svg.call(zoomBehavior as any)
+    svg.call(zoomBehavior)
 
     // Apply saved transform here if it exists
     if (savedTransform !== undefined) {
-        svg.call(zoomBehavior.transform as any, savedTransform)
+        svg.call(zoomBehavior.transform, savedTransform)
     }
 
     svg.on('mousemove', (event: MouseEvent) => {
@@ -303,8 +303,8 @@ function updateMap() {
         }
     })
 
-    // @ts-ignore: I don't know it's type c:
-    function zoom({ transform }) {
+    function zoom(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
+        const transform = event.transform
         savedTransform = transform // Save the current transform
 
         // Re-scale y axis during zoom
@@ -312,14 +312,14 @@ function updateMap() {
             .transition()
             .duration(50)
             // .call(yAxis.scale(transform.rescaleY(yScale)));
-            .call(transition => yAxis.scale(transform.rescaleY(yScale)))
+            .call(() => yAxis.scale(transform.rescaleY(yScale)))
 
         // Re-scale x axis during zoom
         d3.select('#x_axis')
             .transition()
             .duration(50)
             // .call(xAxis.scale(transform.rescaleX(xScale)));
-            .call(transition => xAxis.scale(transform.rescaleY(xScale)))
+            .call(() => xAxis.scale(transform.rescaleY(xScale)))
 
         // Re-draw vertices using new scales
         const new_xScale = transform.rescaleX(xScale)
@@ -407,18 +407,23 @@ function updateMap() {
         userMsg.value += ' to ' + station.name
     }
 
-    // @ts-ignore: I don't know it's type c:
-    function drawTempLine(svg, startStation2: Station, end: number[]) {
+    function drawTempLine(
+        svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, unknown>,
+        startStation2: Station,
+        end: number[]
+    ) {
         svg.select('#temp-line').remove()
 
         // Get the SVG element
         const svgElement = svg.node()
+        if (!svgElement) return
 
         // Get the SVG coordinates of the mouse cursor relative to the SVG element
         const svgPoint = svgElement.createSVGPoint()
         svgPoint.x = end[0] + 2
         svgPoint.y = end[1]
         const screenCTM = svgElement.getScreenCTM()
+        if (!screenCTM) return
         const svgCursorPoint = svgPoint.matrixTransform(screenCTM.inverse())
 
         // Convert SVG coordinates to data space using scales
@@ -443,7 +448,8 @@ function updateMap() {
         endStation.z = yScale(endStation.z)
 
         const turn = calculateTurn(startStation2, endStation)
-        const lineGroup = [
+        type LinePoint = { x: number; z: number }
+        const lineGroup: { start: LinePoint; end: LinePoint }[] = [
             { start: startStation2, end: turn },
             { start: turn, end: endStation },
         ]
@@ -455,10 +461,10 @@ function updateMap() {
             .data(lineGroup)
             .enter()
             .append('line')
-            .attr('x1', (d: { start: Station; end: Station }) => d.start.x)
-            .attr('y1', (d: { start: Station; end: Station }) => d.start.z)
-            .attr('x2', (d: { start: Station; end: Station }) => d.end.x)
-            .attr('y2', (d: { start: Station; end: Station }) => d.end.z)
+            .attr('x1', d => d.start.x)
+            .attr('y1', d => d.start.z)
+            .attr('x2', d => d.end.x)
+            .attr('y2', d => d.end.z)
             .style('stroke', 'gray')
             .style('stroke-width', 2)
             .style('stroke-dasharray', '5 5')
@@ -533,7 +539,20 @@ async function onGraphChange() {
         }
 
         case 'Steiner tree': {
-            network.value = runIteratedSteinerTree(network.value)
+            await runIteratedSteinerTreeASYNC(
+                network.value,
+                (result: Network) => {
+                    if (colourGraph.value) {
+                        network.value = autoColourGraph(result)
+                    } else {
+                        network.value = result
+                    }
+
+                    updateMap()
+                    updateData()
+                }
+            )
+
             break
         }
 
@@ -566,98 +585,104 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-    <div class="fixed right-0 top-0 w-48 p-5 backdrop-blur">
-        <p class="text-center text-accent">
-            <a
-                href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="GitHub">
-                Piston Bolt Network Builder
-            </a>
-            <span class="text-[10px] text-text">*early alpha build by kk</span>
-        </p>
+    <div>
+        <div class="fixed right-0 top-0 w-48 p-5 backdrop-blur">
+            <p class="text-center text-accent">
+                <a
+                    href="https://github.com/KK-mp4/Bolt-Routing-Problem-V2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="GitHub">
+                    Piston Bolt Network Builder
+                </a>
+                <span class="text-[10px] text-text"
+                    >*early alpha build by kk</span
+                >
+            </p>
 
-        <BaseSelect
-            aria-label="Graph type"
-            v-model="graphType"
-            @change="onGraphChange">
-            <option value="None">None</option>
-            <option value="Star graph">Star graph (WIP)</option>
-            <option value="Complete graph">Complete graph</option>
-            <option value="Nearest neighbor">Nearest neighbor (WIP)</option>
-            <option value="Hamiltonian cycle">Hamiltonian cycle (WIP)</option>
-            <!-- <option value="Boruvka's algorithm">Boruvka's algorithm (WIP)</option> -->
-            <option value="Prim's algorithm">Prim's algorithm (WIP)</option>
-            <option value="Kruskal's algorithm">
-                Kruskal's algorithm (WIP)
-            </option>
-            <option value="Steiner tree">Steiner tree (WIP)</option>
-            <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
-            <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
-            <!-- <option value="Euclidean Steiner tree">Euclidean Steiner tree (WIP)</option> -->
-        </BaseSelect>
+            <BaseSelect
+                v-model="graphType"
+                aria-label="Graph type"
+                @change="onGraphChange">
+                <option value="None">None</option>
+                <option value="Star graph">Star graph (WIP)</option>
+                <option value="Complete graph">Complete graph</option>
+                <option value="Nearest neighbor">Nearest neighbor (WIP)</option>
+                <option value="Hamiltonian cycle">
+                    Hamiltonian cycle (WIP)
+                </option>
+                <!-- <option value="Boruvka's algorithm">Boruvka's algorithm (WIP)</option> -->
+                <option value="Prim's algorithm">Prim's algorithm (WIP)</option>
+                <option value="Kruskal's algorithm">
+                    Kruskal's algorithm (WIP)
+                </option>
+                <option value="Steiner tree">Steiner tree (WIP)</option>
+                <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
+                <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
+                <!-- <option value="Euclidean Steiner tree">Euclidean Steiner tree (WIP)</option> -->
+            </BaseSelect>
 
-        <div v-if="graphType === 'Star graph'">
-            <BaseSelect v-model="starGraphS" @change="onGraphChange">
-                <option value="4">S<sub>4</sub></option>
-                <option value="8">S<sub>8</sub></option>
-            </BaseSelect>
-            <BaseSelect v-model="starGraphMergePos" @change="onGraphChange">
-                <option value="median">Median</option>
-                <option value="average">Average</option>
-                <option value="">0, 0</option>
-                <option value="spawn">Spawn</option>
-                <option value="track">Track mouse</option>
-            </BaseSelect>
+            <div v-if="graphType === 'Star graph'">
+                <BaseSelect v-model="starGraphS" @change="onGraphChange">
+                    <option value="4">S₄</option>
+                    <option value="8">S₈</option>
+                </BaseSelect>
+                <BaseSelect v-model="starGraphMergePos" @change="onGraphChange">
+                    <option value="median">Median</option>
+                    <option value="average">Average</option>
+                    <option value="">0, 0</option>
+                    <option value="spawn">Spawn</option>
+                    <option value="track">Track mouse</option>
+                </BaseSelect>
+            </div>
         </div>
-    </div>
 
-    <div class="fixed left-0 top-0 p-5 pb-1 backdrop-blur">
-        <p class="text-xs">
-            Stations:<br />
-            <span v-if="network.stations" class="text-accent">{{
-                network.stations.length
-            }}</span>
-            <span v-else class="text-accent">0</span>
-        </p>
-        <p class="mt-1 text-xs">
-            Bolt length:<br /><span class="text-accent"
-                >{{ totalBoltLength }} blocks</span
+        <div class="fixed left-0 top-0 p-5 pb-1 backdrop-blur">
+            <p class="text-xs">
+                Stations:<br />
+                <span v-if="network.stations" class="text-accent">{{
+                    network.stations.length
+                }}</span>
+                <span v-else class="text-accent">0</span>
+            </p>
+            <p class="mt-1 text-xs">
+                Bolt length:<br /><span class="text-accent"
+                    >{{ totalBoltLength }} blocks</span
+                >
+            </p>
+            <p class="mt-1 text-xs">
+                Tunnel length:<br /><span class="text-accent"
+                    >{{ totalTunnelLength }} blocks</span
+                >
+            </p>
+            <p v-if="calcStats" class="mb-2 mt-1 text-xs">
+                Average travel time:<br /><span class="text-accent"
+                    >{{ Math.round(averageTravelTime * 100) / 100 }} s</span
+                >
+            </p>
+
+            <NuxtLink to="/settings" title="Setting page" class="text-xs"
+                >Settings -><br
+            /></NuxtLink>
+            <NuxtLink
+                v-if="calcStats"
+                to="/heatmap"
+                title="Distance matrix heatmap"
+                class="text-xs"
+                >Heatmap -><br
+            /></NuxtLink>
+            <NuxtLink to="/scatterplot" title="Scatter plot" class="text-xs"
+                >Scatter plot -></NuxtLink
             >
-        </p>
-        <p class="mt-1 text-xs">
-            Tunnel length:<br /><span class="text-accent"
-                >{{ totalTunnelLength }} blocks</span
-            >
-        </p>
-        <p v-if="calcStats" class="mb-2 mt-1 text-xs">
-            Average travel time:<br /><span class="text-accent"
-                >{{ Math.round(averageTravelTime * 100) / 100 }} s</span
-            >
-        </p>
+        </div>
 
-        <NuxtLink to="/settings" title="Setting page" class="text-xs"
-            >Settings -><br
-        /></NuxtLink>
-        <NuxtLink
-            v-if="calcStats"
-            to="/heatmap"
-            title="Distance matrix heatmap"
-            class="text-xs"
-            >Heatmap -><br
-        /></NuxtLink>
-        <NuxtLink to="/scatterplot" title="Scatter plot" class="text-xs"
-            >Scatter plot -></NuxtLink
-        >
+        <p class="fixed bottom-0 left-0 select-none text-sm">{{ userMsg }}</p>
+
+        <div
+            class="invisible fixed bottom-0 right-0 select-none text-[10px] md:visible">
+            <p>pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3</p>
+        </div>
+
+        <div id="network_map" class="h-full w-full p-0" />
     </div>
-
-    <p class="fixed bottom-0 left-0 select-none text-sm">{{ userMsg }}</p>
-
-    <div
-        class="invisible fixed bottom-0 right-0 select-none text-[10px] md:visible">
-        <p>pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3</p>
-    </div>
-
-    <div id="network_map" class="h-full w-full p-0" />
 </template>

@@ -108,7 +108,7 @@ function drawPlot() {
     svg.append('g')
         .attr('stroke', 'currentColor')
         .attr('stroke-opacity', 0.1)
-        .call((g: any) =>
+        .call(g =>
             g
                 .append('g')
                 .selectAll('line')
@@ -119,7 +119,7 @@ function drawPlot() {
                 .attr('y1', 0)
                 .attr('y2', chart_dy)
         )
-        .call((g: any) =>
+        .call(g =>
             g
                 .append('g')
                 .selectAll('line')
@@ -151,7 +151,7 @@ function drawPlot() {
             ' seconds }'
     }
 
-    const mouseleave = function (event: MouseEvent) {
+    const mouseleave = function () {
         userMsg.value = ''
     }
 
@@ -191,7 +191,7 @@ function drawPlot() {
         .on('mousemove', (event: MouseEvent, d: PlotData) =>
             mousemove(event, d)
         )
-        .on('mouseleave', (event: MouseEvent) => mouseleave(event))
+        .on('mouseleave', () => mouseleave())
 
     // Point lables
     svg.append('g')
@@ -276,12 +276,14 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-    <NuxtLink
-        to="/"
-        title="Go back to main page"
-        class="fixed left-3 top-3 text-xs"
-        >← Back</NuxtLink
-    >
-    <p class="fixed bottom-0 left-0 select-none text-sm">{{ userMsg }}</p>
-    <div id="scatter-plot" class="h-full w-full p-0" />
+    <div>
+        <NuxtLink
+            to="/"
+            title="Go back to main page"
+            class="fixed left-3 top-3 text-xs"
+            >← Back</NuxtLink
+        >
+        <p class="fixed bottom-0 left-0 select-none text-sm">{{ userMsg }}</p>
+        <div id="scatter-plot" class="h-full w-full p-0" />
+    </div>
 </template>
