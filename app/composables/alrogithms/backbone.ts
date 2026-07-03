@@ -132,6 +132,59 @@ export function generateGridBackboneGraph(
     return { stations: terminals.concat(hubs), bolts }
 }
 
+// k-nearest-neighbors backbone (future-proof network).
+//
+// Every station links directly to its k nearest stations (Chebyshev distance),
+// with no hubs or junctions. The result is unioned with an MST over the
+// stations so the network is always connected even where the local kNN edges
+// leave gaps. Because each station's edges depend only on its neighborhood,
+// inserting a new station later touches just that local area instead of forcing
+// a global rebuild.
+export function generateKnnBackboneGraph(network: Network, k: number): Network {
+    const terminals = network.stations.slice()
+    const n = terminals.length
+
+    if (n === 0) return { stations: terminals, bolts: [] }
+
+    const neighbors = Math.max(1, Math.min(Math.round(k), n - 1))
+
+    // Undirected edge set, keyed by the sorted index pair, to dedupe the
+    // (possibly asymmetric) kNN links and the MST edges we merge in below.
+    const seen = new Set<string>()
+    const bolts: Bolt[] = []
+
+    const addEdge = (a: number, b: number) => {
+        if (a === b) return
+        const key = a < b ? `${a}:${b}` : `${b}:${a}`
+        if (seen.has(key)) return
+        seen.add(key)
+        bolts.push(makeBolt(terminals[a], terminals[b]))
+    }
+
+    // kNN: for each station, connect to its k nearest stations.
+    for (let i = 0; i < n; ++i) {
+        const distances: { index: number; dist: number }[] = []
+        for (let j = 0; j < n; ++j) {
+            if (i === j) continue
+            distances.push({
+                index: j,
+                dist: chebyshevDistance(terminals[i], terminals[j]),
+            })
+        }
+        distances.sort((a, b) => a.dist - b.dist)
+        for (let m = 0; m < neighbors; ++m) {
+            addEdge(i, distances[m].index)
+        }
+    }
+
+    // Connectivity backstop: union with an MST over the stations.
+    for (const [a, b] of mstEdges(terminals)) {
+        addEdge(a, b)
+    }
+
+    return { stations: terminals, bolts }
+}
+
 // Lloyd's k-means using Chebyshev assignment, seeded farthest-first for a
 // deterministic, well-spread starting configuration.
 function kMeans(stations: Station[], k: number): { x: number; z: number }[] {

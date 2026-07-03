@@ -193,13 +193,18 @@ function drawPlot() {
     const labels = gPlot
         .append('g')
         .style('font-family', 'Fira Code')
-        .style('fill', '#fbdfd8')
         .style('font-size', '10px')
         .selectAll('text')
         .data(plotData.value)
         .join('text')
         .attr('dy', '0.35em')
         .text((d: PlotData) => d.graph_name)
+        .style('fill', (d: PlotData) =>
+            d.locally_stable ? '#d3e935' : '#fbdfd8'
+        )
+        .style('font-weight', (d: PlotData) =>
+            d.locally_stable ? '600' : 'normal'
+        )
 
     // Redraws every position from the (possibly rescaled) scales.
     function render(

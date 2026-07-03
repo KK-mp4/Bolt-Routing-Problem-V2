@@ -6,6 +6,10 @@
 export interface SolverDefinition {
     id: string
     label: string
+    // Short tags describing the solver against the three criteria of this
+    // problem (tunnel length / sparsity, average travel time, local stability).
+    // Rendered as pills next to the solver selector.
+    properties: string[]
     // Synchronous run producing the final network.
     run: (network: Network, settings: AppSettings) => Network
     // Optional progressive variant for heavy solvers (reports intermediate
@@ -21,11 +25,13 @@ export const SOLVERS: SolverDefinition[] = [
     {
         id: 'none',
         label: 'None',
+        properties: [],
         run: network => ({ stations: network.stations, bolts: [] }),
     },
     {
         id: 'star',
-        label: 'Star graph',
+        label: 'Tree graph',
+        properties: ['sparse', 'locally stable'],
         run: (network, settings) =>
             generateStarGraph(
                 network,
@@ -36,11 +42,13 @@ export const SOLVERS: SolverDefinition[] = [
     {
         id: 'complete',
         label: 'Complete graph',
+        properties: ['dense', 'locally stable', 'fastest routes'],
         run: network => generateCompleteGraph(network),
     },
     {
         id: 'nearest-neighbor',
         label: 'Nearest neighbor',
+        properties: ['sparse', 'locally unstable'],
         run: network => generateNNGraph(network),
         runAsync: (network, _settings, onProgress) =>
             generateNNGraphASYNC(network, onProgress),
@@ -48,21 +56,30 @@ export const SOLVERS: SolverDefinition[] = [
     {
         id: 'hamiltonian',
         label: 'Hamiltonian cycle',
+        properties: ['sparse', 'locally unstable', 'directed'],
         run: network => generateLoopGraph(network),
     },
     {
         id: 'prims',
         label: "Prim's algorithm",
+        properties: ['sparse', 'locally unstable', 'min length'],
         run: network => runPrimsAlgotithm(network),
     },
     {
         id: 'kruskals',
         label: "Kruskal's algorithm",
+        properties: ['sparse', 'locally unstable', 'min length'],
         run: network => runKruskalsAlgotithm(generateCompleteGraph(network)),
     },
     {
         id: 'steiner',
         label: 'Steiner tree',
+        properties: [
+            'sparse',
+            'locally unstable',
+            'min length',
+            'adds junctions',
+        ],
         run: network => runIteratedSteinerTree(network),
         runAsync: (network, _settings, onProgress) =>
             runIteratedSteinerTreeASYNC(network, onProgress),
@@ -70,6 +87,7 @@ export const SOLVERS: SolverDefinition[] = [
     {
         id: 'spanner',
         label: 'Greedy t-spanner',
+        properties: ['tunable', 'locally unstable'],
         run: (network, settings) =>
             generateSpannerGraph(
                 network,
@@ -79,36 +97,50 @@ export const SOLVERS: SolverDefinition[] = [
     {
         id: 'yao',
         label: 'Yao-8 graph',
+        properties: ['sparse', 'locally stable', 'spanner'],
         run: network => generateYaoGraph(network),
     },
     {
         id: 'delaunay',
         label: 'Delaunay',
+        properties: ['sparse', 'locally stable'],
         run: network => generateDelaunayGraph(network),
     },
     {
         id: 'gabriel',
         label: 'Gabriel graph',
+        properties: ['sparse', 'locally stable'],
         run: network => generateGabrielGraph(network),
     },
     {
         id: 'rng',
         label: 'Relative neighborhood',
+        properties: ['sparse', 'locally stable'],
         run: network => generateRNGGraph(network),
     },
     {
         id: 'backbone',
         label: 'Hub backbone',
-        run: (network, settings) =>
-            settings.solvers.backbone.style === 'grid'
-                ? generateGridBackboneGraph(
-                      network,
-                      Number(settings.solvers.backbone.grid)
-                  )
-                : generateBackboneGraph(
-                      network,
-                      Number(settings.solvers.backbone.hubs)
-                  ),
+        properties: ['sparse', 'locally stable'],
+        run: (network, settings) => {
+            switch (settings.solvers.backbone.style) {
+                case 'grid':
+                    return generateGridBackboneGraph(
+                        network,
+                        Number(settings.solvers.backbone.grid)
+                    )
+                case 'knn':
+                    return generateKnnBackboneGraph(
+                        network,
+                        Number(settings.solvers.backbone.knn)
+                    )
+                default:
+                    return generateBackboneGraph(
+                        network,
+                        Number(settings.solvers.backbone.hubs)
+                    )
+            }
+        },
     },
 ]
 
@@ -145,6 +177,7 @@ export function runAllSolvers(
                 graph_name: solver.label,
                 length: totalTunnel,
                 time: calculateAverageTravelTime(result),
+                locally_stable: solver.properties.includes('locally stable'),
             })
         } catch (error) {
             console.error(`Solver "${solver.id}" failed:`, error)

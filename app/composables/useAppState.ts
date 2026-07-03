@@ -48,12 +48,10 @@ function defaultSettings(): AppSettings {
         solvers: {
             star: { rayCount: 8, mergeAt: 'median' },
             spanner: { stretch: 1.5 },
-            backbone: { style: 'hubs', hubs: 4, grid: 4 },
+            backbone: { style: 'hubs', hubs: 4, grid: 4, knn: 3 },
         },
     }
 }
-
-// --- Normalisation / migration for potentially old or malformed data ---
 
 function normalizeStation(raw: unknown): Station {
     const r = (raw ?? {}) as Record<string, unknown>
@@ -171,9 +169,13 @@ export function normalizeSettings(raw: unknown): AppSettings {
                 stretch: toNumber(spanner.stretch, d.solvers.spanner.stretch),
             },
             backbone: {
-                style: backbone.style === 'grid' ? 'grid' : 'hubs',
+                style:
+                    backbone.style === 'grid' || backbone.style === 'knn'
+                        ? backbone.style
+                        : 'hubs',
                 hubs: toNumber(backbone.hubs, d.solvers.backbone.hubs),
                 grid: toNumber(backbone.grid, d.solvers.backbone.grid),
+                knn: toNumber(backbone.knn, d.solvers.backbone.knn),
             },
         },
     }

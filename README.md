@@ -14,23 +14,31 @@ When you already know where the stations will be, it comes down to [multi-object
 
 ## Sections
 
-[Problem domain](#problem-domain)  
-[Star graph](#1-star-graph)  
-[Complete graph](#2-complete-graph)  
-[Minimum spanning tree (MST)](#3-minimum-spanning-tree-mst)  
-[Steiner tree](#4-steiner-tree)  
-[Greedy t-spanner](#5-greedy-t-spanner)  
-[Yao-8 graph](#6-yao-8-graph)  
-[Proximity graphs](#7-proximity-graphs)  
-[Hub backbone](#8-hub-backbone)  
-[Distance matrix heatmap](#distance-matrix-heatmap)  
-[Pareto front](#pareto-front)  
+[Problem domain](#problem-domain)
+[Star graph](#1-star-graph)
+[Complete graph](#2-complete-graph)
+[Minimum spanning tree (MST)](#3-minimum-spanning-tree-mst)
+[Steiner tree](#4-steiner-tree)
+[Greedy t-spanner](#5-greedy-t-spanner)
+[Yao-8 graph](#6-yao-8-graph)
+[Proximity graphs](#7-proximity-graphs)
+[Hub backbone](#8-hub-backbone)
+[Solver properties](#solver-properties)
+[Distance matrix heatmap](#distance-matrix-heatmap)
+[Pareto front](#pareto-front)
+[Future work](#future-work)
 [How to use](#how-to-use)
 
 ## Problem Domain
 
 Generalizing and looking outside the Minecraft, this problem comes down to finding an optimal interconnect for a given set of vertices (stations) on a 2 dimensional [Chebyshev metric space](https://en.wikipedia.org/wiki/Chebyshev_distance).
 The solution to the problem is a weighted directed/undirected graph. Weight will be Chebyshev distance between vertices (stations) and directionality would come down to the fact that the graph has loops or not. For example, [Hamiltonian path] can be directed, since in theory a player can get to any station from any station just by traveling in one direction.
+
+Originally this was a two-objective problem: minimize total piston bolt length and minimize average travel time. In practice those globally optimized solutions have a hidden flaw: they are not future-proof. Because they optimize over the whole point set at once, adding a single new station can reshuffle the entire network and force a full rebuild. That raises a third criterion:
+
+3. **Local stability (incremental insertion)** - can a new station be attached by only touching its neighborhood, leaving the rest of the network untouched, instead of triggering a global rebuild?
+
+So the design space is now a trade-off between three properties: tunnel length, average travel time, and local stability. The [solver properties](#solver-properties) tags below summarize where each algorithm sits on these three axes.
 
 ### 1. Star graph
 
@@ -103,12 +111,13 @@ Both the Gabriel and relative-neighborhood graphs are subgraphs of the Delaunay 
 
 ### 8. Hub backbone
 
-A future-proof network, available in two styles:
+A future-proof network, available in three styles:
 
 - **Hubs (k-means)** - a small set of hubs is placed with [k-means](https://en.wikipedia.org/wiki/K-means_clustering) over the stations, the hubs are joined into a trunk (an MST over the hubs), and every station spurs to its nearest hub.
 - **Fixed grid** - the stations' bounding box is divided into an _n_ × _n_ lattice of trunk lines; every intersection is a junction, adjacent intersections are joined along rows and columns, and each station spurs to its nearest intersection.
+- **Nearest neighbors (kNN)** - every station links directly to its _k_ nearest stations by Chebyshev distance, with no hubs or junctions. Since a plain [k-nearest-neighbors graph](https://en.wikipedia.org/wiki/Nearest_neighbor_graph) can leave disconnected pockets, the edges are unioned with an MST over the stations to guarantee the whole network is reachable. Because each station's edges depend only on its neighborhood, inserting a new station later touches just that local area.
 
-Either way the backbone depends only on its parameters (hub positions or grid divisions), so adding a new station later just attaches one more spur to the nearest existing hub or intersection, leaving the rest of the network untouched, unlike the globally optimized tree solutions that would need a full redesign. The fixed grid is the most future-proof since its trunk does not move at all as long as new stations stay inside the covered area.
+The hub and grid styles depend only on their parameters (hub positions or grid divisions), so adding a new station later just attaches one more spur to the nearest existing hub or intersection, leaving the rest of the network untouched, unlike the globally optimized tree solutions that would need a full redesign. The fixed grid is the most future-proof since its trunk does not move at all as long as new stations stay inside the covered area. The kNN style skips the trunk entirely and instead keeps the network locally stable by wiring each station only to its close neighbors.
 
 ## Distance matrix heatmap
 
@@ -121,6 +130,15 @@ To calculate average travel time in a given network I use [Floyd-Warshall algori
 To choose a network that best suits your needs, there is a page with scatter plot and Pareto front.
 
 ![image](https://github.com/KK-mp4/Bolt-Routing-Problem-V2/assets/103208695/ceb521aa-5f25-454d-9c8f-c5dad2ff59ce)
+
+## Future work
+
+Now that local stability is a first-class criterion, the most promising directions are structures that are sparse, keep short routes, and support incremental insertion natively. Candidates worth exploring in this Chebyshev space:
+
+- **HNSW-like navigable graph** - a multi-layer proximity graph in the style of [Hierarchical Navigable Small World](https://en.wikipedia.org/wiki/Hierarchical_navigable_small_world) graphs. It is designed for incremental insertion in any metric space (Chebyshev qualifies), gives roughly _O(log n)_ hops (short routes), and bounds each station's degree. The main drawback is long "express" edges that create tunnel crossings. Microsoft's DiskANN/Vamana is a bounded-degree incremental cousin.
+- **Unit-square (fixed-radius) graph** - the Chebyshev analogue of a [unit disk graph](https://en.wikipedia.org/wiki/Unit_disk_graph): connect any two stations within a Chebyshev radius _r_ (an L∞ ball is a square). Naturally local and incremental, but density swings with _r_ and it can disconnect in sparse areas, so it would need an MST fallback like the kNN style.
+- **Theta-graph** - a cone-based spanner sibling of the Yao-8 graph that projects onto cone bisectors instead of taking the nearest neighbor per cone. It is a strong spanner and is built per-station, so it is incrementally friendly.
+- **Dynamic geometric spanner** - research on [dynamic spanners](https://en.wikipedia.org/wiki/Geometric_spanner) maintains a _t_-spanner under insertions with only polylogarithmic local edge changes, which is the principled way to make the existing greedy t-spanner future-proof instead of rebuilding it from scratch.
 
 ## How to use
 

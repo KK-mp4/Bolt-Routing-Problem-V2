@@ -30,6 +30,7 @@ export interface PlotData {
     graph_name: string
     length: number
     time: number
+    locally_stable: boolean
 }
 
 export interface DistanceMatrix {
@@ -49,9 +50,10 @@ export interface SpannerSettings {
 }
 
 export interface BackboneSettings {
-    style: 'hubs' | 'grid'
+    style: 'hubs' | 'grid' | 'knn'
     hubs: number
     grid: number
+    knn: number
 }
 
 // One nested object per solver that has tunable options. Solvers without

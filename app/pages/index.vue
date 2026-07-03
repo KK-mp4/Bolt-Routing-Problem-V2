@@ -34,6 +34,11 @@ let savedTransform = d3.zoomIdentity
 // Solver dropdown options come straight from the registry.
 const solverOptions = SOLVERS
 
+// Property tags for the currently selected solver (rendered as pills).
+const activeSolverProperties = computed(
+    () => getSolver(settings.value.activeSolver)?.properties ?? []
+)
+
 onMounted(async () => {
     window.addEventListener('resize', updateMap)
 
@@ -534,6 +539,17 @@ onBeforeUnmount(() => {
                 </option>
             </BaseSelect>
 
+            <div
+                v-if="activeSolverProperties.length"
+                class="mt-2 flex flex-wrap gap-1">
+                <span
+                    v-for="property in activeSolverProperties"
+                    :key="property"
+                    class="rounded-sm border border-primary px-1.5 py-0.5 text-[10px] text-accent">
+                    {{ property }}
+                </span>
+            </div>
+
             <div v-if="settings.activeSolver === 'star'">
                 <BaseSelect
                     v-model="settings.solvers.star.rayCount"
@@ -571,6 +587,7 @@ onBeforeUnmount(() => {
                     @change="onGraphChange">
                     <option value="hubs">Hubs (k-means)</option>
                     <option value="grid">Fixed grid</option>
+                    <option value="knn">Nearest neighbors (kNN)</option>
                 </BaseSelect>
                 <BaseSelect
                     v-if="settings.solvers.backbone.style === 'hubs'"
@@ -591,6 +608,15 @@ onBeforeUnmount(() => {
                     <option :value="4">4 × 4 grid</option>
                     <option :value="6">6 × 6 grid</option>
                     <option :value="8">8 × 8 grid</option>
+                </BaseSelect>
+                <BaseSelect
+                    v-if="settings.solvers.backbone.style === 'knn'"
+                    v-model="settings.solvers.backbone.knn"
+                    @change="onGraphChange">
+                    <option :value="2">k = 2</option>
+                    <option :value="3">k = 3</option>
+                    <option :value="4">k = 4</option>
+                    <option :value="6">k = 6</option>
                 </BaseSelect>
             </div>
         </div>
