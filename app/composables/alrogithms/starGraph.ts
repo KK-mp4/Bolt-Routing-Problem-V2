@@ -39,13 +39,7 @@ export function generateStarGraph(
         z = -176
     }
 
-    const stationB = {
-        name: 'Junction №0',
-        description: '',
-        colour: '#f2a788',
-        x: x,
-        z: z,
-    }
+    const stationB = makeJunction('Junction \u21160', x, z)
 
     network.stations.push(stationB)
 
@@ -63,14 +57,12 @@ export function generateStarGraph(
             turn = calculateTurn(stationA, stationB)
         }
 
-        network.bolts.push({
-            directed: false,
-            station_a: stationB,
-            turn: turn,
-            station_b: stationA,
-            length: chebyshevDistance(stationA, stationB),
-            colour: '#8f7f10',
-        })
+        network.bolts.push(
+            makeBolt(stationB, stationA, {
+                turn,
+                length: chebyshevDistance(stationA, stationB),
+            })
+        )
     }
 
     return network

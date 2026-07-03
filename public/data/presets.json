@@ -1,0 +1,8 @@
+[
+    { "file": "network.json", "name": "Dugged (default)" },
+    { "file": "dugged_network_2024.json", "name": "Dugged 2024" },
+    { "file": "bismuth_network_2024.json", "name": "Bismuth 2024" },
+    { "file": "zipkrowd_network_2017.json", "name": "ZipKrowd 2017" },
+    { "file": "prototech_network_2024.json", "name": "ProtoTech 2024" },
+    { "file": "scicraft_network_2024.json", "name": "SciCraft 2024" }
+]

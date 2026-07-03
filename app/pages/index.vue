@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import * as d3 from 'd3'
-import { useLocalStorage } from '@vueuse/core'
 
 useSeoMeta({
     title: 'Piston Bolt Network Builder',
@@ -18,41 +17,34 @@ useSeoMeta({
     twitterCard: 'summary',
 })
 
+const { workingGraph, settings, ensureWorkingGraph } = useAppState()
+const network = workingGraph // shared, id-based working graph
+
 const userMsg = ref('') // Message that is displayed at the bottom left corner of the screen
-const network = useLocalStorage('piston-bolt-network', {} as Network) // Object containing stations and bolts
-let startStation: Station = {} as Station // Starting station for manual connection
-const startStationUnscaled: Station = {} as Station
+let startStation: Station | null = null // Starting station for manual connection
+const startStationUnscaled = { x: 0, z: 0 }
 let endPoint: number[] = [] // Ending station x, z
 let middleButtonPressed = false // Toggle to detect if user is dragging mouse3
 const totalBoltLength = ref(0)
 const totalTunnelLength = ref(0)
 const averageTravelTime = ref(0)
-const graphType = useLocalStorage('graph-type', '') // select variable that stores graph type
-const starGraphS = useLocalStorage('star-graph-s', 8) // Amount of star rays
-const starGraphMergePos = useLocalStorage('star-graph-merge-pos', 'median') // Star graph merging point
-const spannerStretch = useLocalStorage('spanner-stretch', 1.5) // t-spanner stretch factor
-const backboneStyle = useLocalStorage('backbone-style', 'hubs') // Backbone style: hubs or grid
-const backboneHubs = useLocalStorage('backbone-hubs', 4) // Number of backbone hubs
-const backboneGrid = useLocalStorage('backbone-grid', 4) // Fixed grid divisions per axis
 
 let savedTransform = d3.zoomIdentity
 
-// Settings
-const showLabels = useLocalStorage('show-labels', false)
-const colourGraph = useLocalStorage('colour-graph', false)
-const calcStats = useLocalStorage('calculate-stats', true)
+// Solver dropdown options come straight from the registry.
+const solverOptions = SOLVERS
 
 onMounted(async () => {
     window.addEventListener('resize', updateMap)
 
-    if (!network.value.stations) {
-        const response = await fetch('/data/network.json')
-        const data: Network = await response.json()
-        network.value = data
-    }
+    await ensureWorkingGraph()
 
     onGraphChange()
 })
+
+function markerId(colour: string): string {
+    return 'arrow-' + colour.replace(/[^a-zA-Z0-9]/g, '')
+}
 
 function updateMap() {
     // Clear old SVG when 'network_map' is clicked
@@ -67,6 +59,14 @@ function updateMap() {
     const svg_dy = window.innerHeight
     const chart_dx = svg_dx - margin.right - margin.left
     const chart_dy = svg_dy - margin.top - margin.bottom
+
+    // Resolve bolt endpoints by id, dropping any dangling bolts defensively.
+    const byId = stationsById(network.value)
+    const validBolts = network.value.bolts.filter(
+        bolt => byId.has(bolt.source) && byId.has(bolt.target)
+    )
+    const sourceOf = (bolt: Bolt) => byId.get(bolt.source) as Station
+    const targetOf = (bolt: Bolt) => byId.get(bolt.target) as Station
 
     // Finding the maximum absolute range of both x and z dimensions
     const maxX =
@@ -150,29 +150,18 @@ function updateMap() {
 
     svg.selectAll('.tick line').style('stroke', '#422B25')
 
-    // Plot bolts
-    const edges_a = svg
-        .append('g')
-        .attr('id', 'edges_a')
-        .attr('transform', 'translate(75, 0)')
-        .selectAll('line')
-        .data(network.value.bolts)
-        .enter()
-        .append('line')
-        .attr('x1', (d: Bolt) => xScale(d.station_a.x))
-        .attr('y1', (d: Bolt) => yScale(d.station_a.z))
-        .attr('x2', (d: Bolt) => xScale(d.turn.x))
-        .attr('y2', (d: Bolt) => yScale(d.turn.z))
-        .style('stroke', (d: Bolt) => d.colour)
-        .style('stroke-width', 1)
-
-    // Arrows for directed graphs
+    // Arrowhead markers (one per colour) for directed bolts.
+    const directedColours = Array.from(
+        new Set(
+            validBolts.filter(bolt => bolt.directed).map(bolt => bolt.colour)
+        )
+    )
     svg.append('defs')
         .selectAll('marker')
-        .data(network.value.bolts.filter(bolt => bolt.directed))
+        .data(directedColours)
         .enter()
         .append('marker')
-        .attr('id', (d, i) => `arrow-${i}`)
+        .attr('id', (colour: string) => markerId(colour))
         .attr('viewBox', '0 -5 10 10')
         .attr('refX', 14)
         .attr('refY', 0)
@@ -180,24 +169,43 @@ function updateMap() {
         .attr('markerHeight', 8)
         .attr('orient', 'auto')
         .append('path')
-        .attr('fill', d => d.colour)
+        .attr('fill', (colour: string) => colour)
         .attr('d', 'M0,-5L10,0L0,5')
 
+    // Plot bolts (first leg: source -> turn)
+    const edges_a = svg
+        .append('g')
+        .attr('id', 'edges_a')
+        .attr('transform', 'translate(75, 0)')
+        .selectAll('line')
+        .data(validBolts)
+        .enter()
+        .append('line')
+        .attr('x1', (d: Bolt) => xScale(sourceOf(d).x))
+        .attr('y1', (d: Bolt) => yScale(sourceOf(d).z))
+        .attr('x2', (d: Bolt) => xScale(d.turn.x))
+        .attr('y2', (d: Bolt) => yScale(d.turn.z))
+        .style('stroke', (d: Bolt) => d.colour)
+        .style('stroke-width', 1)
+
+    // Plot bolts (second leg: turn -> target)
     const edges_b = svg
         .append('g')
         .attr('id', 'edges_b')
         .attr('transform', 'translate(75, 0)')
         .selectAll('line')
-        .data(network.value.bolts)
+        .data(validBolts)
         .enter()
         .append('line')
         .attr('x1', (d: Bolt) => xScale(d.turn.x))
         .attr('y1', (d: Bolt) => yScale(d.turn.z))
-        .attr('x2', (d: Bolt) => xScale(d.station_b.x))
-        .attr('y2', (d: Bolt) => yScale(d.station_b.z))
+        .attr('x2', (d: Bolt) => xScale(targetOf(d).x))
+        .attr('y2', (d: Bolt) => yScale(targetOf(d).z))
         .style('stroke', (d: Bolt) => d.colour)
         .style('stroke-width', 1)
-        .attr('marker-end', (d, i) => `url(#arrow-${i})`)
+        .attr('marker-end', (d: Bolt) =>
+            d.directed ? `url(#${markerId(d.colour)})` : null
+        )
 
     // Plot stations
     const vertices = svg
@@ -240,7 +248,10 @@ function updateMap() {
         .attr('x', (d: Station) => xScale(d.x))
         .attr('y', (d: Station) => yScale(d.z) - 14)
         .text((d: Station) => d.name)
-        .style('visibility', showLabels.value ? 'visible' : 'hidden')
+        .style(
+            'visibility',
+            settings.value.display.showLabels ? 'visible' : 'hidden'
+        )
 
     // Create a zoom behavior
     const zoomBehavior = d3.zoom<SVGSVGElement, unknown>().on('zoom', zoom)
@@ -255,8 +266,8 @@ function updateMap() {
 
     svg.on('mousemove', (event: MouseEvent) => {
         if (
-            graphType.value === 'Star graph' &&
-            starGraphMergePos.value === 'track'
+            settings.value.activeSolver === 'star' &&
+            settings.value.solvers.star.mergeAt === 'track'
         ) {
             // Get the SVG element
             const svgElement = svg.node()
@@ -276,9 +287,9 @@ function updateMap() {
             const svgEndY = svgCursorPoint.y - margin.top
 
             network.value = generateStarGraph(
-                network.value,
-                starGraphS.value,
-                starGraphMergePos.value,
+                cleanClone(network.value),
+                Number(settings.value.solvers.star.rayCount),
+                'track',
                 Math.round(xScale.invert(svgEndX)),
                 Math.round(yScale.invert(svgEndY))
             )
@@ -288,9 +299,9 @@ function updateMap() {
 
         if (!middleButtonPressed) return
 
-        if (startStation.name !== undefined) {
+        if (startStation !== null) {
             endPoint = [event.offsetX, event.offsetY]
-            drawTempLine(svg, startStation, endPoint)
+            drawTempLine(svg, endPoint)
         }
     })
 
@@ -315,14 +326,12 @@ function updateMap() {
         d3.select('#y_axis')
             .transition()
             .duration(50)
-            // .call(yAxis.scale(transform.rescaleY(yScale)));
             .call(() => yAxis.scale(transform.rescaleY(yScale)))
 
         // Re-scale x axis during zoom
         d3.select('#x_axis')
             .transition()
             .duration(50)
-            // .call(xAxis.scale(transform.rescaleX(xScale)));
             .call(() => xAxis.scale(transform.rescaleY(xScale)))
 
         // Re-draw vertices using new scales
@@ -340,29 +349,25 @@ function updateMap() {
         svg.selectAll('.tick line').style('stroke', '#422B25')
 
         vertices
-            .data(network.value.stations)
             .attr('cx', (d: Station) => new_xScale(d.x))
             .attr('cy', (d: Station) => new_yScale(d.z))
 
         lables
-            .data(network.value.stations)
             .attr('x', (d: Station) => new_xScale(d.x))
             .attr('y', (d: Station) => new_yScale(d.z) - 14)
 
         // Re-draw edges using new scales
         edges_a
-            .data(network.value.bolts)
-            .attr('x1', (d: Bolt) => new_xScale(d.station_a.x))
-            .attr('y1', (d: Bolt) => new_yScale(d.station_a.z))
+            .attr('x1', (d: Bolt) => new_xScale(sourceOf(d).x))
+            .attr('y1', (d: Bolt) => new_yScale(sourceOf(d).z))
             .attr('x2', (d: Bolt) => new_xScale(d.turn.x))
             .attr('y2', (d: Bolt) => new_yScale(d.turn.z))
 
         edges_b
-            .data(network.value.bolts)
             .attr('x1', (d: Bolt) => new_xScale(d.turn.x))
             .attr('y1', (d: Bolt) => new_yScale(d.turn.z))
-            .attr('x2', (d: Bolt) => new_xScale(d.station_b.x))
-            .attr('y2', (d: Bolt) => new_yScale(d.station_b.z))
+            .attr('x2', (d: Bolt) => new_xScale(targetOf(d).x))
+            .attr('y2', (d: Bolt) => new_yScale(targetOf(d).z))
     }
 
     function handleLClick(station: Station) {
@@ -372,48 +377,26 @@ function updateMap() {
     }
 
     function handleMiddleClick(e: MouseEvent, station: Station) {
-        startStation = {
-            name: station.name,
-            description: '',
-            colour: '',
-            x: station.x,
-            z: station.z,
-        }
-
+        startStation = station
         startStationUnscaled.x = station.x
         startStationUnscaled.z = station.z
 
-        userMsg.value = 'Draw bolt from ' + startStation.name
+        userMsg.value = 'Draw bolt from ' + station.name
     }
 
     function handleMiddleRelease(e: MouseEvent, station: Station) {
-        if (!startStation.name || station.name === startStation.name) return
+        if (!startStation || station.id === startStation.id) return
 
-        const station_a = {
-            name: startStation.name,
-            description: '',
-            colour: '',
-            x: startStationUnscaled.x,
-            z: startStationUnscaled.z,
-        }
-
-        network.value.bolts.push({
-            directed: false,
-            station_a: station_a as StationShort,
-            turn: calculateTurn(station_a, station),
-            station_b: station as StationShort,
-            length: chebyshevDistance(startStationUnscaled, station),
-            colour: '#8f7f10',
-        })
+        network.value.bolts.push(makeBolt(startStation, station))
 
         updateMap()
         updateData()
         userMsg.value += ' to ' + station.name
+        startStation = null
     }
 
     function drawTempLine(
         svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, unknown>,
-        startStation2: Station,
         end: number[]
     ) {
         svg.select('#temp-line').remove()
@@ -435,9 +418,6 @@ function updateMap() {
         const svgEndY = svgCursorPoint.y - margin.top
 
         const endStation = {
-            name: '',
-            colour: '',
-            description: '',
             x: xScale.invert(svgEndX),
             z: yScale.invert(svgEndY),
         }
@@ -445,16 +425,18 @@ function updateMap() {
         const new_xScale = savedTransform.rescaleX(xScale)
         const new_yScale = savedTransform.rescaleY(yScale)
 
-        startStation2.x = new_xScale(startStationUnscaled.x)
-        startStation2.z = new_yScale(startStationUnscaled.z)
+        const startPoint = {
+            x: new_xScale(startStationUnscaled.x),
+            z: new_yScale(startStationUnscaled.z),
+        }
 
         endStation.x = xScale(endStation.x)
         endStation.z = yScale(endStation.z)
 
-        const turn = calculateTurn(startStation2, endStation)
+        const turn = calculateTurn(startPoint, endStation)
         type LinePoint = { x: number; z: number }
         const lineGroup: { start: LinePoint; end: LinePoint }[] = [
-            { start: startStation2, end: turn },
+            { start: startPoint, end: turn },
             { start: turn, end: endStation },
         ]
 
@@ -476,143 +458,36 @@ function updateMap() {
 }
 
 async function onGraphChange() {
-    if (graphType.value === '') {
-        if (colourGraph.value) {
-            network.value = autoColourGraph(network.value)
-        }
+    const solverId = settings.value.activeSolver
+    const colour = settings.value.display.colourGraph
 
+    // Empty selection: render the current graph as-is.
+    if (!solverId) {
+        if (colour) network.value = autoColourGraph(network.value)
         updateMap()
         updateData()
         return
     }
 
     const start = Date.now()
+    const solver = getSolver(solverId)
 
-    clearJunctions(network.value)
-
-    switch (graphType.value) {
-        case 'None': {
-            network.value.bolts = []
-            break
-        }
-
-        case 'Star graph': {
-            network.value = generateStarGraph(
-                network.value,
-                starGraphS.value,
-                starGraphMergePos.value
-            )
-            break
-        }
-
-        case 'Complete graph': {
-            network.value = generateCompleteGraph(network.value)
-            break
-        }
-
-        case 'Nearest neighbor': {
-            await generateNNGraphASYNC(network.value, (path: Network) => {
-                if (colourGraph.value) {
-                    network.value = autoColourGraph(path)
-                } else {
-                    network.value = path
-                }
-
+    if (solver?.runAsync) {
+        await solver.runAsync(
+            cleanClone(network.value),
+            settings.value,
+            (result: Network) => {
+                network.value = colour ? autoColourGraph(result) : result
                 updateMap()
                 updateData()
-            })
-
-            break
-        }
-
-        case 'Hamiltonian cycle': {
-            network.value = generateLoopGraph(network.value)
-            break
-        }
-
-        case "Prim's algorithm": {
-            network.value = runPrimsAlgotithm(network.value)
-            break
-        }
-
-        case "Kruskal's algorithm": {
-            network.value = runKruskalsAlgotithm(
-                generateCompleteGraph(network.value)
-            )
-            break
-        }
-
-        case 'Steiner tree': {
-            await runIteratedSteinerTreeASYNC(
-                network.value,
-                (result: Network) => {
-                    if (colourGraph.value) {
-                        network.value = autoColourGraph(result)
-                    } else {
-                        network.value = result
-                    }
-
-                    updateMap()
-                    updateData()
-                }
-            )
-
-            break
-        }
-
-        case 'Spanner': {
-            network.value = generateSpannerGraph(
-                network.value,
-                Number(spannerStretch.value)
-            )
-            break
-        }
-
-        case 'Yao-8 graph': {
-            network.value = generateYaoGraph(network.value)
-            break
-        }
-
-        case 'Delaunay': {
-            network.value = generateDelaunayGraph(network.value)
-            break
-        }
-
-        case 'Gabriel graph': {
-            network.value = generateGabrielGraph(network.value)
-            break
-        }
-
-        case 'Relative neighborhood': {
-            network.value = generateRNGGraph(network.value)
-            break
-        }
-
-        case 'Backbone': {
-            if (backboneStyle.value === 'grid') {
-                network.value = generateGridBackboneGraph(
-                    network.value,
-                    Number(backboneGrid.value)
-                )
-            } else {
-                network.value = generateBackboneGraph(
-                    network.value,
-                    Number(backboneHubs.value)
-                )
             }
-            break
-        }
-
-        default: {
-            break
-        }
+        )
+    } else {
+        const result = runSolver(network.value, solverId, settings.value)
+        network.value = colour ? autoColourGraph(result) : result
     }
 
     userMsg.value = 'Processing time: ' + (Date.now() - start) + 'ms'
-
-    if (colourGraph.value) {
-        network.value = autoColourGraph(network.value)
-    }
 
     updateMap()
     updateData()
@@ -622,7 +497,7 @@ function updateData() {
     ;[totalBoltLength.value, totalTunnelLength.value] = calculateTotalDist(
         network.value
     )
-    if (calcStats.value) {
+    if (settings.value.display.calcStats) {
         averageTravelTime.value = calculateAverageTravelTime(network.value)
     }
 }
@@ -648,40 +523,27 @@ onBeforeUnmount(() => {
             </p>
 
             <BaseSelect
-                v-model="graphType"
+                v-model="settings.activeSolver"
                 aria-label="Graph type"
                 @change="onGraphChange">
-                <option value="None">None</option>
-                <option value="Star graph">Star graph (WIP)</option>
-                <option value="Complete graph">Complete graph</option>
-                <option value="Nearest neighbor">Nearest neighbor (WIP)</option>
-                <option value="Hamiltonian cycle">
-                    Hamiltonian cycle (WIP)
+                <option
+                    v-for="solver in solverOptions"
+                    :key="solver.id"
+                    :value="solver.id">
+                    {{ solver.label }}
                 </option>
-                <!-- <option value="Boruvka's algorithm">Boruvka's algorithm (WIP)</option> -->
-                <option value="Prim's algorithm">Prim's algorithm (WIP)</option>
-                <option value="Kruskal's algorithm">
-                    Kruskal's algorithm (WIP)
-                </option>
-                <option value="Steiner tree">Steiner tree (WIP)</option>
-                <option value="Spanner">Greedy t-spanner (WIP)</option>
-                <option value="Yao-8 graph">Yao-8 graph (WIP)</option>
-                <option value="Delaunay">Delaunay (WIP)</option>
-                <option value="Gabriel graph">Gabriel graph (WIP)</option>
-                <option value="Relative neighborhood">
-                    Relative neighborhood (WIP)
-                </option>
-                <option value="Backbone">Hub backbone (WIP)</option>
-                <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
-                <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
             </BaseSelect>
 
-            <div v-if="graphType === 'Star graph'">
-                <BaseSelect v-model="starGraphS" @change="onGraphChange">
-                    <option value="4">S₄</option>
-                    <option value="8">S₈</option>
+            <div v-if="settings.activeSolver === 'star'">
+                <BaseSelect
+                    v-model="settings.solvers.star.rayCount"
+                    @change="onGraphChange">
+                    <option :value="4">S₄</option>
+                    <option :value="8">S₈</option>
                 </BaseSelect>
-                <BaseSelect v-model="starGraphMergePos" @change="onGraphChange">
+                <BaseSelect
+                    v-model="settings.solvers.star.mergeAt"
+                    @change="onGraphChange">
                     <option value="optimal">Optimal (Chebyshev median)</option>
                     <option value="median">Median</option>
                     <option value="average">Average</option>
@@ -691,40 +553,44 @@ onBeforeUnmount(() => {
                 </BaseSelect>
             </div>
 
-            <div v-if="graphType === 'Spanner'">
-                <BaseSelect v-model="spannerStretch" @change="onGraphChange">
-                    <option value="1.1">t = 1.1</option>
-                    <option value="1.25">t = 1.25</option>
-                    <option value="1.5">t = 1.5</option>
-                    <option value="2">t = 2</option>
-                    <option value="3">t = 3</option>
+            <div v-if="settings.activeSolver === 'spanner'">
+                <BaseSelect
+                    v-model="settings.solvers.spanner.stretch"
+                    @change="onGraphChange">
+                    <option :value="1.1">t = 1.1</option>
+                    <option :value="1.25">t = 1.25</option>
+                    <option :value="1.5">t = 1.5</option>
+                    <option :value="2">t = 2</option>
+                    <option :value="3">t = 3</option>
                 </BaseSelect>
             </div>
 
-            <div v-if="graphType === 'Backbone'">
-                <BaseSelect v-model="backboneStyle" @change="onGraphChange">
+            <div v-if="settings.activeSolver === 'backbone'">
+                <BaseSelect
+                    v-model="settings.solvers.backbone.style"
+                    @change="onGraphChange">
                     <option value="hubs">Hubs (k-means)</option>
                     <option value="grid">Fixed grid</option>
                 </BaseSelect>
                 <BaseSelect
-                    v-if="backboneStyle === 'hubs'"
-                    v-model="backboneHubs"
+                    v-if="settings.solvers.backbone.style === 'hubs'"
+                    v-model="settings.solvers.backbone.hubs"
                     @change="onGraphChange">
-                    <option value="2">2 hubs</option>
-                    <option value="3">3 hubs</option>
-                    <option value="4">4 hubs</option>
-                    <option value="6">6 hubs</option>
-                    <option value="8">8 hubs</option>
+                    <option :value="2">2 hubs</option>
+                    <option :value="3">3 hubs</option>
+                    <option :value="4">4 hubs</option>
+                    <option :value="6">6 hubs</option>
+                    <option :value="8">8 hubs</option>
                 </BaseSelect>
                 <BaseSelect
-                    v-if="backboneStyle === 'grid'"
-                    v-model="backboneGrid"
+                    v-if="settings.solvers.backbone.style === 'grid'"
+                    v-model="settings.solvers.backbone.grid"
                     @change="onGraphChange">
-                    <option value="2">2 × 2 grid</option>
-                    <option value="3">3 × 3 grid</option>
-                    <option value="4">4 × 4 grid</option>
-                    <option value="6">6 × 6 grid</option>
-                    <option value="8">8 × 8 grid</option>
+                    <option :value="2">2 × 2 grid</option>
+                    <option :value="3">3 × 3 grid</option>
+                    <option :value="4">4 × 4 grid</option>
+                    <option :value="6">6 × 6 grid</option>
+                    <option :value="8">8 × 8 grid</option>
                 </BaseSelect>
             </div>
         </div>
@@ -747,7 +613,7 @@ onBeforeUnmount(() => {
                     >{{ totalTunnelLength }} blocks</span
                 >
             </p>
-            <p v-if="calcStats" class="mb-2 mt-1 text-xs">
+            <p v-if="settings.display.calcStats" class="mb-2 mt-1 text-xs">
                 Average travel time:<br /><span class="text-accent"
                     >{{ Math.round(averageTravelTime * 100) / 100 }} s</span
                 >
@@ -757,7 +623,7 @@ onBeforeUnmount(() => {
                 >Settings -><br
             /></NuxtLink>
             <NuxtLink
-                v-if="calcStats"
+                v-if="settings.display.calcStats"
                 to="/heatmap"
                 title="Distance matrix heatmap"
                 class="text-xs"

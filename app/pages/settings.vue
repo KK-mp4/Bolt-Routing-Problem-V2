@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useLocalStorage } from '@vueuse/core'
-
 useSeoMeta({
     title: 'Settings - Piston Bolt Network Builder',
     description:
@@ -17,37 +15,84 @@ useSeoMeta({
     twitterCard: 'summary',
 })
 
-const network = useLocalStorage('piston-bolt-network', {} as Network)
-const distanceMatrix = useLocalStorage(
-    'distance-matrix',
-    {} as DistanceMatrix[]
-)
-const plotData = useLocalStorage('scatter-plot', {} as PlotData[])
-const showLabels = useLocalStorage('show-labels', false)
-const colourGraph = useLocalStorage('colour-graph', false)
-const calcStats = useLocalStorage('calculate-stats', true)
+const {
+    workingGraph,
+    settings,
+    presets,
+    ensureWorkingGraph,
+    fetchPresetManifest,
+    loadBuiltInPreset,
+    loadUserPreset,
+    saveCurrentAsPreset,
+    deleteUserPreset,
+    importNetworkFromText,
+    clearWorkingGraph,
+    localStorageUsedBytes,
+    LOCAL_STORAGE_QUOTA,
+} = useAppState()
+
+const network = workingGraph
 
 const userMsg = ref('')
-let timesSaved = 0
+const manifest = ref<PresetManifestEntry[]>([])
+const selectedPreset = ref('')
+const presetName = ref('')
+const storageUsed = ref(0)
 
 const fileInput: Ref<HTMLInputElement | null> = ref(null)
 
+const storagePercent = computed(() =>
+    Math.min(100, Math.round((storageUsed.value / LOCAL_STORAGE_QUOTA) * 100))
+)
+
+function refreshStorage() {
+    storageUsed.value = localStorageUsedBytes()
+}
+
 onMounted(async () => {
-    if (!network.value.stations) {
-        const response = await fetch('/data/network.json')
-        const data: Network = await response.json()
-        network.value = data
-    }
+    await ensureWorkingGraph()
+    manifest.value = await fetchPresetManifest()
+    refreshStorage()
 })
 
 function onSettingsChange() {
     userMsg.value = 'Changes saved.'
-    for (let i = 0; i < timesSaved; ++i) {
-        userMsg.value += '.'
+}
+
+async function onPresetSelected() {
+    const value = selectedPreset.value
+    if (!value) return
+
+    const [kind, ...rest] = value.split(':')
+    const id = rest.join(':')
+
+    if (kind === 'builtin') {
+        const ok = await loadBuiltInPreset(id)
+        userMsg.value = ok
+            ? 'Preset loaded.'
+            : 'Failed to load preset (see console).'
+    } else if (kind === 'user') {
+        const ok = loadUserPreset(id)
+        userMsg.value = ok ? 'Preset loaded.' : 'Preset not found.'
     }
 
-    timesSaved++
-    if (timesSaved >= 30) userMsg.value += 'is this funny to you?'
+    refreshStorage()
+}
+
+function savePreset() {
+    const result = saveCurrentAsPreset(presetName.value)
+    userMsg.value = result.message
+    if (result.ok) {
+        presetName.value = ''
+        refreshStorage()
+    }
+}
+
+function removePreset(id: string) {
+    deleteUserPreset(id)
+    if (selectedPreset.value === `user:${id}`) selectedPreset.value = ''
+    userMsg.value = 'Preset deleted.'
+    refreshStorage()
 }
 
 const triggerFileInput = () => {
@@ -56,103 +101,74 @@ const triggerFileInput = () => {
 
 function importNetwork(event: Event) {
     const target = event.target as HTMLInputElement
-    const file = (target.files as FileList)[0] // Get the selected file
-    if (file) {
-        const reader = new FileReader()
+    const file = target.files?.[0]
+    if (!file) return
 
-        // Define a promise for reading file
-        const readFile = (file: File) => {
-            return new Promise<string>((resolve, reject) => {
-                reader.onload = () => {
-                    if (reader.result) {
-                        resolve(reader.result.toString())
-                    } else {
-                        reject(new Error('Failed to read file'))
-                    }
-                }
-                reader.onerror = reject
-                reader.readAsText(file)
-            })
-        }
-
-        // Read the file and parse JSON
-        readFile(file)
-            .then((data: string) => {
-                try {
-                    network.value = JSON.parse(data) as Network
-                } catch (error) {
-                    console.error('Error parsing JSON:', error)
-                }
-            })
-            .catch(error => {
-                console.error('Error reading file:', error)
-            })
+    const reader = new FileReader()
+    reader.onload = () => {
+        const text = reader.result?.toString() ?? ''
+        const ok = importNetworkFromText(text)
+        userMsg.value = ok
+            ? 'Network imported.'
+            : 'Import failed: invalid or unreadable JSON.'
+        refreshStorage()
     }
+    reader.onerror = () => {
+        userMsg.value = 'Import failed: could not read the file.'
+    }
+    reader.readAsText(file)
+}
+
+function downloadBlob(content: string, type: string, filename: string) {
+    const blob = new Blob([content], { type })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
 }
 
 function exportNetwork() {
-    // navigator.clipboard.writeText(JSON.stringify(network.value, null, 4));
-    const data = JSON.stringify(network.value, null, 4)
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'network.json'
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
+    downloadBlob(
+        JSON.stringify(network.value, null, 4),
+        'application/json',
+        'network.json'
+    )
 }
 
 function exportDistanceMatrix() {
-    const csvContent = convertDistanceMatrixToCSV(distanceMatrix.value)
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'distance_matrix.csv'
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
+    const matrix = buildDistanceMatrix(network.value)
+    downloadBlob(
+        convertDistanceMatrixToCSV(matrix),
+        'text/csv',
+        'distance_matrix.csv'
+    )
 }
 
 function convertDistanceMatrixToCSV(matrix: DistanceMatrix[]) {
-    // Get station names
     const stationNames = matrix.map(entry => entry.station_name)
-
-    // Construct CSV header with one empty cell at the beginning
     let csvContent = ';"' + stationNames.join('";"') + '"\n'
-
-    // Construct CSV body
     for (let i = 0; i < matrix.length; i++) {
         csvContent += `"${stationNames[i]}";"${matrix[i].values.join('";"')}"\n`
     }
-
     return csvContent
 }
 
 function exportScatter() {
-    const csvContent = convertPlotDataToCSV(plotData.value)
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'scatter-plot.csv'
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
+    const data = runAllSolvers(network.value, settings.value)
+    downloadBlob(convertPlotDataToCSV(data), 'text/csv', 'scatter-plot.csv')
 }
 
 function convertPlotDataToCSV(data: PlotData[]) {
-    // Construct CSV header
     const csvHeader =
         '"Graph";"Total tunnel length, blocks";"Average travel time, s"\n'
-
-    // Construct CSV body
     let csvContent = ''
     for (const entry of data) {
         csvContent += `"${entry.graph_name}";${entry.length};${entry.time}\n`
     }
-
     return csvHeader + csvContent
 }
 </script>
@@ -175,25 +191,86 @@ function convertPlotDataToCSV(data: PlotData[]) {
                     User guide available on GitHub:
                 </a>
 
-                <BaseToggle v-model="showLabels" @change="onSettingsChange"
+                <BaseToggle
+                    v-model="settings.display.showLabels"
+                    @change="onSettingsChange"
                     >Show station labels
                     <p class="text-xs text-primary">
                         Displays station labels next to graph vertices
                     </p></BaseToggle
                 >
-                <BaseToggle v-model="colourGraph" @change="onSettingsChange"
+                <BaseToggle
+                    v-model="settings.display.colourGraph"
+                    @change="onSettingsChange"
                     >Colour graph automatically
                     <p class="text-xs text-primary">
                         Colours graph randomly after generation
                     </p></BaseToggle
                 >
-                <BaseToggle v-model="calcStats" @change="onSettingsChange"
+                <BaseToggle
+                    v-model="settings.display.calcStats"
+                    @change="onSettingsChange"
                     >Calculate average travel time
                     <p class="text-xs text-primary">
                         Slows processing time, but unlocks distance matrix
                         heatmap
                     </p></BaseToggle
                 >
+                <div class="mb-7 h-0 w-full border border-primary" />
+
+                <label class="mb-1 text-sm text-primary">Load preset</label>
+                <BaseSelect v-model="selectedPreset" @change="onPresetSelected">
+                    <option value="">— Select a preset —</option>
+                    <optgroup label="Built-in">
+                        <option
+                            v-for="entry in manifest"
+                            :key="entry.file"
+                            :value="`builtin:${entry.file}`">
+                            {{ entry.name }}
+                        </option>
+                    </optgroup>
+                    <optgroup v-if="presets.length" label="Saved">
+                        <option
+                            v-for="preset in presets"
+                            :key="preset.id"
+                            :value="`user:${preset.id}`">
+                            {{ preset.name }}
+                        </option>
+                    </optgroup>
+                </BaseSelect>
+
+                <div
+                    v-if="presets.length"
+                    class="mb-3 mt-2 flex flex-col gap-1 text-xs">
+                    <div
+                        v-for="preset in presets"
+                        :key="preset.id"
+                        class="flex items-center justify-between">
+                        <span class="text-accent">{{ preset.name }}</span>
+                        <button
+                            class="text-primary underline"
+                            @click="removePreset(preset.id)">
+                            delete
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-2 mt-3 flex gap-2">
+                    <input
+                        v-model="presetName"
+                        aria-label="Preset name"
+                        placeholder="New preset name"
+                        class="w-full rounded-sm bg-primary px-2 font-bold text-background outline-none" />
+                </div>
+                <BaseButton @click="savePreset"
+                    >Save current graph as preset</BaseButton
+                >
+                <p class="mb-1 text-xs text-primary">
+                    Storage used: {{ Math.round(storageUsed / 1024) }} KB /
+                    {{ Math.round(LOCAL_STORAGE_QUOTA / 1024) }} KB ({{
+                        storagePercent
+                    }}%)
+                </p>
                 <div class="mb-7 h-0 w-full border border-primary" />
 
                 <BaseButton @click="triggerFileInput"
@@ -207,7 +284,7 @@ function convertPlotDataToCSV(data: PlotData[]) {
                     type="file"
                     style="display: none"
                     @change="importNetwork" />
-                <BaseButton @click="network = { stations: [], bolts: [] }"
+                <BaseButton @click="clearWorkingGraph"
                     >Clear network</BaseButton
                 >
                 <div class="mb-7 h-0 w-full border border-primary" />

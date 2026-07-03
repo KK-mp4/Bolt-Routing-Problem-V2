@@ -50,17 +50,15 @@ export function runBoruvkasAlgorithm(
         for (let i = 0; i < numStations; i++) {
             const edge = minEdge[i]
             if (edge !== null) {
-                bolts.push({
-                    directed: false,
-                    station_a: stations[edge.station_a],
-                    turn: calculateTurn(
+                bolts.push(
+                    makeBolt(
                         stations[edge.station_a],
-                        stations[edge.station_b]
-                    ),
-                    station_b: stations[edge.station_b],
-                    length: edge.length,
-                    colour: '#8f7f10',
-                })
+                        stations[edge.station_b],
+                        {
+                            length: edge.length,
+                        }
+                    )
+                )
 
                 // Union the two components
                 union(edge.station_a, edge.station_b, representatives)

@@ -19,13 +19,9 @@ export function generateBackboneGraph(
     const centroids = kMeans(terminals, k)
 
     // Materialize hubs as prunable junctions.
-    const hubs: Station[] = centroids.map((c, i) => ({
-        name: `Junction \u2116${i}`,
-        description: '',
-        colour: '#f2a788',
-        x: c.x,
-        z: c.z,
-    }))
+    const hubs: Station[] = centroids.map((c, i) =>
+        makeJunction(`Junction \u2116${i}`, c.x, c.z)
+    )
 
     const bolts: Bolt[] = []
 
@@ -94,13 +90,13 @@ export function generateGridBackboneGraph(
     for (let i = 0; i < cols; ++i) {
         gridIndex[i] = []
         for (let j = 0; j < rows; ++j) {
-            hubs.push({
-                name: `Junction \u2116${count}`,
-                description: '',
-                colour: '#f2a788',
-                x: Math.round(minX + stepX * i),
-                z: Math.round(minZ + stepZ * j),
-            })
+            hubs.push(
+                makeJunction(
+                    `Junction \u2116${count}`,
+                    Math.round(minX + stepX * i),
+                    Math.round(minZ + stepZ * j)
+                )
+            )
             gridIndex[i][j] = count
             count++
         }
@@ -134,17 +130,6 @@ export function generateGridBackboneGraph(
     }
 
     return { stations: terminals.concat(hubs), bolts }
-}
-
-function makeBolt(stationA: Station, stationB: Station): Bolt {
-    return {
-        directed: false,
-        station_a: { name: stationA.name, x: stationA.x, z: stationA.z },
-        turn: calculateTurn(stationA, stationB),
-        station_b: { name: stationB.name, x: stationB.x, z: stationB.z },
-        length: chebyshevDistance(stationA, stationB),
-        colour: '#8f7f10',
-    }
 }
 
 // Lloyd's k-means using Chebyshev assignment, seeded farthest-first for a

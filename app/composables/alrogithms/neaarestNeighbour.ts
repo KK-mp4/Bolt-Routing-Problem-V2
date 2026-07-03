@@ -40,14 +40,7 @@ export function generateNNGraph(network: Network): Network {
         // Looping until all stations are visited
         let nextStation: Station | null
         while ((nextStation = findNearestNeighbor(currentStation)) !== null) {
-            bolts.push({
-                directed: false,
-                station_a: currentStation,
-                turn: calculateTurn(currentStation, nextStation),
-                station_b: nextStation,
-                length: chebyshevDistance(currentStation, nextStation),
-                colour: '#8f7f10',
-            })
+            bolts.push(makeBolt(currentStation, nextStation))
 
             visited[stations.indexOf(nextStation)] = true
             currentStation = nextStation
@@ -112,14 +105,7 @@ export async function generateNNGraphASYNC(
         // Looping until all stations are visited
         let nextStation: Station | null
         while ((nextStation = findNearestNeighbor(currentStation)) !== null) {
-            bolts.push({
-                directed: false,
-                station_a: currentStation,
-                turn: calculateTurn(currentStation, nextStation),
-                station_b: nextStation,
-                length: chebyshevDistance(currentStation, nextStation),
-                colour: '#8f7f10',
-            })
+            bolts.push(makeBolt(currentStation, nextStation))
 
             visited[stations.indexOf(nextStation)] = true
             currentStation = nextStation

@@ -5,6 +5,7 @@ const addNewStation = () => {
     stations.value = [
         ...stations.value,
         {
+            id: makeId(),
             name: 'New Station',
             description: '',
             colour: '#f2a788',

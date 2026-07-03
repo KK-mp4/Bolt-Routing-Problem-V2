@@ -38,14 +38,7 @@ function delaunayEdges(stations: Station[]): [number, number][] {
 }
 
 function boltFromEdge(stationA: Station, stationB: Station): Bolt {
-    return {
-        directed: false,
-        station_a: { name: stationA.name, x: stationA.x, z: stationA.z },
-        turn: calculateTurn(stationA, stationB),
-        station_b: { name: stationB.name, x: stationB.x, z: stationB.z },
-        length: chebyshevDistance(stationA, stationB),
-        colour: '#8f7f10',
-    }
+    return makeBolt(stationA, stationB)
 }
 
 function sqDist(a: Station, b: Station): number {

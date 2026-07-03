@@ -41,15 +41,16 @@ export function runKruskalsAlgotithm(network: Network): Network {
     // Initializing Union-Find data structure
     const uf = new UnionFind(stations.length)
 
+    const indexById = new Map<string, number>()
+    stations.forEach((station, index) => indexById.set(station.id, index))
+
     const mst: Bolt[] = []
 
     bolts.forEach(bolt => {
-        const stationAIndex = stations.findIndex(
-            station => station.name === bolt.station_a.name
-        )
-        const stationBIndex = stations.findIndex(
-            station => station.name === bolt.station_b.name
-        )
+        const stationAIndex = indexById.get(bolt.source)
+        const stationBIndex = indexById.get(bolt.target)
+
+        if (stationAIndex === undefined || stationBIndex === undefined) return
 
         const rootA = uf.find(stationAIndex)
         const rootB = uf.find(stationBIndex)

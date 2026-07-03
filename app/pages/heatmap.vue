@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import * as d3 from 'd3'
-import { useLocalStorage } from '@vueuse/core'
 
 useSeoMeta({
     title: 'Distance matrix heatmap - Piston Bolt Network Builder',
@@ -18,16 +17,21 @@ useSeoMeta({
     twitterCard: 'summary',
 })
 
-const distanceMatrix = useLocalStorage(
-    'distance-matrix',
-    {} as DistanceMatrix[]
+const { workingGraph, ensureWorkingGraph } = useAppState()
+
+// Distance matrix is derived live from the working graph, not persisted.
+const distanceMatrix = computed<DistanceMatrix[]>(() =>
+    buildDistanceMatrix(workingGraph.value)
 )
 const userMsg = ref('')
 
-onMounted(() => {
+onMounted(async () => {
+    await ensureWorkingGraph()
     window.addEventListener('resize', drawHeatmap)
     drawHeatmap()
 })
+
+watch(distanceMatrix, () => drawHeatmap())
 
 interface HeatmapCell {
     value: number

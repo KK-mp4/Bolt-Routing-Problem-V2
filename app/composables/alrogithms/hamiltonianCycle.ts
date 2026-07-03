@@ -39,28 +39,18 @@ export function generateLoopGraph(network: Network): Network {
         // Looping until all stations are visited
         let nextStation: Station | null
         while ((nextStation = findNearestNeighbor(currentStation)) !== null) {
-            bolts.push({
-                directed: true,
-                station_a: currentStation,
-                turn: calculateTurn(currentStation, nextStation),
-                station_b: nextStation,
-                length: chebyshevDistance(currentStation, nextStation),
-                colour: '#8f7f10',
-            })
+            bolts.push(
+                makeBolt(currentStation, nextStation, { directed: true })
+            )
 
             visited[stations.indexOf(nextStation)] = true
             currentStation = nextStation
         }
 
         // Connecting the last station with the start station to complete the loop
-        bolts.push({
-            directed: true,
-            station_a: currentStation,
-            turn: calculateTurn(currentStation, stations[startIdx]),
-            station_b: stations[startIdx],
-            length: chebyshevDistance(currentStation, stations[startIdx]),
-            colour: '#8f7f10',
-        })
+        bolts.push(
+            makeBolt(currentStation, stations[startIdx], { directed: true })
+        )
 
         // Calculating the total length of the path
         const pathLength = bolts.reduce((acc, bolt) => acc + bolt.length, 0)

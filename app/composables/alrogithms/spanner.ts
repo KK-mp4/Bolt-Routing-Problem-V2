@@ -33,24 +33,7 @@ export function generateSpannerGraph(network: Network, t: number): Network {
             adjacency[i].push([j, d])
             adjacency[j].push([i, d])
 
-            const stationA = stations[i]
-            const stationB = stations[j]
-            bolts.push({
-                directed: false,
-                station_a: {
-                    name: stationA.name,
-                    x: stationA.x,
-                    z: stationA.z,
-                },
-                turn: calculateTurn(stationA, stationB),
-                station_b: {
-                    name: stationB.name,
-                    x: stationB.x,
-                    z: stationB.z,
-                },
-                length: d,
-                colour: '#8f7f10',
-            })
+            bolts.push(makeBolt(stations[i], stations[j], { length: d }))
         }
     }
 

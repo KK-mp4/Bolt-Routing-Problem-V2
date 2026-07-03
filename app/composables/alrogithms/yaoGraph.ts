@@ -47,24 +47,9 @@ export function generateYaoGraph(network: Network): Network {
             if (seen.has(key)) continue
             seen.add(key)
 
-            const stationA = stations[i]
-            const stationB = stations[j]
-            bolts.push({
-                directed: false,
-                station_a: {
-                    name: stationA.name,
-                    x: stationA.x,
-                    z: stationA.z,
-                },
-                turn: calculateTurn(stationA, stationB),
-                station_b: {
-                    name: stationB.name,
-                    x: stationB.x,
-                    z: stationB.z,
-                },
-                length: nearestDist[c],
-                colour: '#8f7f10',
-            })
+            bolts.push(
+                makeBolt(stations[i], stations[j], { length: nearestDist[c] })
+            )
         }
     }
 

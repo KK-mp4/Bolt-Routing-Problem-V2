@@ -75,15 +75,11 @@ function hananCandidates(terminals: Station[]): Station[] {
             const key = `${x},${z}`
             if (seen.has(key)) continue
             seen.add(key)
-            candidates.push(makeJunction(x, z))
+            candidates.push(makeJunction('Junction \u2116', x, z))
         }
     }
 
     return candidates
-}
-
-function makeJunction(x: number, z: number): Station {
-    return { name: 'Junction \u2116', description: '', colour: '#f2a788', x, z }
 }
 
 export function runIteratedSteinerTree(network: Network): Network {
@@ -231,27 +227,18 @@ function buildNetwork(
     // Name and append surviving junctions so clearJunctions can strip them later.
     let junctionCount = 0
     for (let i = terminals.length; i < points.length; ++i) {
-        stations.push({
-            name: `Junction \u2116${junctionCount++}`,
-            description: '',
-            colour: '#f2a788',
-            x: points[i].x,
-            z: points[i].z,
-        })
+        stations.push(
+            makeJunction(
+                `Junction \u2116${junctionCount++}`,
+                points[i].x,
+                points[i].z
+            )
+        )
     }
 
-    const bolts: Bolt[] = edges.map(([u, v]) => {
-        const a = stations[u]
-        const b = stations[v]
-        return {
-            directed: false,
-            station_a: { name: a.name, x: a.x, z: a.z },
-            turn: calculateTurn(a, b),
-            station_b: { name: b.name, x: b.x, z: b.z },
-            length: chebyshevDistance(a, b),
-            colour: '#8f7f10',
-        }
-    })
+    const bolts: Bolt[] = edges.map(([u, v]) =>
+        makeBolt(stations[u], stations[v])
+    )
 
     return { stations, bolts }
 }

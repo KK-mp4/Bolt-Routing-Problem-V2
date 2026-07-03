@@ -10,41 +10,39 @@ export function calculateTotalDist(network: Network): number[] {
     return [totalBolt, totalTunnel]
 }
 
-// Floyd-Warshall algorithm
-export function calculateAverageTravelTime(network: Network): number {
+// Floyd-Warshall all-pairs shortest paths. Undirected bolts contribute both
+// directions; directed bolts only source -> target.
+export function floydWarshall(network: Network): number[][] {
     const stations = network.stations
     const bolts = network.bolts
 
     const n = stations.length
     const inf = Number.POSITIVE_INFINITY
 
-    // Initializing distance matrix with infinity
     const dist: number[][] = Array.from({ length: n }, () => Array(n).fill(inf))
-
-    // Initializing diagonal elements to 0
     for (let i = 0; i < n; ++i) {
         dist[i][i] = 0
     }
 
-    // Filling in edge weights in the distance matrix
-    for (const bolt of bolts) {
-        const stationA = stations.find(
-            station => station.name === bolt.station_a.name
-        )
-        const stationB = stations.find(
-            station => station.name === bolt.station_b.name
-        )
+    // Map station id -> index once for O(1) endpoint resolution.
+    const indexById = new Map<string, number>()
+    for (let i = 0; i < n; ++i) {
+        indexById.set(stations[i].id, i)
+    }
 
-        // Check if both stations exist
-        if (stationA && stationB) {
-            const stationAIndex = stations.indexOf(stationA)
-            const stationBIndex = stations.indexOf(stationB)
-            dist[stationAIndex][stationBIndex] = bolt.length
-            dist[stationBIndex][stationAIndex] = bolt.length
+    for (const bolt of bolts) {
+        const a = indexById.get(bolt.source)
+        const b = indexById.get(bolt.target)
+
+        if (a === undefined || b === undefined) continue
+
+        // Keep the smallest weight in case of parallel edges.
+        dist[a][b] = Math.min(dist[a][b], bolt.length)
+        if (!bolt.directed) {
+            dist[b][a] = Math.min(dist[b][a], bolt.length)
         }
     }
 
-    // Floyd-Warshall algorithm
     for (let k = 0; k < n; ++k) {
         for (let i = 0; i < n; ++i) {
             for (let j = 0; j < n; ++j) {
@@ -55,10 +53,17 @@ export function calculateAverageTravelTime(network: Network): number {
         }
     }
 
+    return dist
+}
+
+export function calculateAverageTravelTime(network: Network): number {
+    const dist = floydWarshall(network)
+    const n = network.stations.length
+    const inf = Number.POSITIVE_INFINITY
+
     let totalDistance = 0
     let validDistances = 0
 
-    // Suming up distances and count valid distances
     for (let i = 0; i < n; ++i) {
         for (let j = 0; j < n; ++j) {
             if (i !== j && dist[i][j] !== inf) {
@@ -68,36 +73,22 @@ export function calculateAverageTravelTime(network: Network): number {
         }
     }
 
-    storeDistanceMatrix(dist, stations)
+    if (validDistances === 0) return 0
 
-    // Calculating average distance and then time (speed is 20 m/s)
+    // Average distance -> time (assumed speed is 20 m/s).
     return totalDistance / validDistances / 20
 }
 
-function storeDistanceMatrix(
-    distMatrix: number[][],
-    stations: Station[]
-): void {
-    const dataToStore: DistanceMatrix[] = []
+// Builds the serialisable distance matrix used by the heatmap and CSV export
+// directly from a network, so there is no stale persisted copy to keep in sync.
+export function buildDistanceMatrix(network: Network): DistanceMatrix[] {
+    const dist = floydWarshall(network)
+    const stations = network.stations
 
-    // Iterating over each station
-    for (let i = 0; i < stations.length; ++i) {
-        const station = stations[i]
-        const stationData: DistanceMatrix = {
-            station_name: station.name,
-            values: [],
-        }
-
-        // Adding distances to other stations
-        for (let j = 0; j < stations.length; ++j) {
-            stationData.values.push(distMatrix[i][j])
-        }
-
-        dataToStore.push(stationData)
-    }
-
-    const dataToStoreString = JSON.stringify(dataToStore)
-    localStorage.setItem('distance-matrix', dataToStoreString)
+    return stations.map((station, i) => ({
+        station_name: station.name,
+        values: stations.map((_, j) => dist[i][j]),
+    }))
 }
 
 export function autoColourGraph(network: Network): Network {
@@ -105,16 +96,15 @@ export function autoColourGraph(network: Network): Network {
         station.colour = getRandomHexColor(station.name)
     })
 
+    const colourById = new Map<string, string>()
+    network.stations.forEach(station =>
+        colourById.set(station.id, station.colour)
+    )
+
     network.bolts.forEach(bolt => {
-        const stationB = network.stations.find(
-            station => station.name === bolt.station_b.name
-        )
-        if (stationB) {
-            bolt.colour = stationB.colour
-        } else {
-            console.error(
-                `Station ${bolt.station_b.name} not found in network.`
-            )
+        const colour = colourById.get(bolt.target)
+        if (colour) {
+            bolt.colour = colour
         }
     })
 
@@ -179,8 +169,31 @@ function stringToDegrees(seed: string): number {
 }
 
 export function clearJunctions(network: Network): Network {
+    const junctionIds = new Set(
+        network.stations
+            .filter(station => station.name.includes('Junction \u2116'))
+            .map(station => station.id)
+    )
+
     network.stations = network.stations.filter(
-        station => !station.name.includes('Junction №')
+        station => !junctionIds.has(station.id)
+    )
+    // Drop any bolts that referenced a removed junction.
+    network.bolts = network.bolts.filter(
+        bolt => !junctionIds.has(bolt.source) && !junctionIds.has(bolt.target)
     )
     return network
+}
+
+// Deep clone that also strips synthetic junctions, giving solvers a clean
+// terminal-only network to run on (avoids junction accumulation across runs).
+export function cloneNetwork(network: Network): Network {
+    return {
+        stations: network.stations.map(station => ({ ...station })),
+        bolts: network.bolts.map(bolt => ({ ...bolt, turn: { ...bolt.turn } })),
+    }
+}
+
+export function cleanClone(network: Network): Network {
+    return clearJunctions(cloneNetwork(network))
 }
