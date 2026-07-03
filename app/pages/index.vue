@@ -30,6 +30,10 @@ const averageTravelTime = ref(0)
 const graphType = useLocalStorage('graph-type', '') // select variable that stores graph type
 const starGraphS = useLocalStorage('star-graph-s', 8) // Amount of star rays
 const starGraphMergePos = useLocalStorage('star-graph-merge-pos', 'median') // Star graph merging point
+const spannerStretch = useLocalStorage('spanner-stretch', 1.5) // t-spanner stretch factor
+const backboneStyle = useLocalStorage('backbone-style', 'hubs') // Backbone style: hubs or grid
+const backboneHubs = useLocalStorage('backbone-hubs', 4) // Number of backbone hubs
+const backboneGrid = useLocalStorage('backbone-grid', 4) // Fixed grid divisions per axis
 
 let savedTransform = d3.zoomIdentity
 
@@ -556,6 +560,49 @@ async function onGraphChange() {
             break
         }
 
+        case 'Spanner': {
+            network.value = generateSpannerGraph(
+                network.value,
+                Number(spannerStretch.value)
+            )
+            break
+        }
+
+        case 'Yao-8 graph': {
+            network.value = generateYaoGraph(network.value)
+            break
+        }
+
+        case 'Delaunay': {
+            network.value = generateDelaunayGraph(network.value)
+            break
+        }
+
+        case 'Gabriel graph': {
+            network.value = generateGabrielGraph(network.value)
+            break
+        }
+
+        case 'Relative neighborhood': {
+            network.value = generateRNGGraph(network.value)
+            break
+        }
+
+        case 'Backbone': {
+            if (backboneStyle.value === 'grid') {
+                network.value = generateGridBackboneGraph(
+                    network.value,
+                    Number(backboneGrid.value)
+                )
+            } else {
+                network.value = generateBackboneGraph(
+                    network.value,
+                    Number(backboneHubs.value)
+                )
+            }
+            break
+        }
+
         default: {
             break
         }
@@ -617,9 +664,16 @@ onBeforeUnmount(() => {
                     Kruskal's algorithm (WIP)
                 </option>
                 <option value="Steiner tree">Steiner tree (WIP)</option>
+                <option value="Spanner">Greedy t-spanner (WIP)</option>
+                <option value="Yao-8 graph">Yao-8 graph (WIP)</option>
+                <option value="Delaunay">Delaunay (WIP)</option>
+                <option value="Gabriel graph">Gabriel graph (WIP)</option>
+                <option value="Relative neighborhood">
+                    Relative neighborhood (WIP)
+                </option>
+                <option value="Backbone">Hub backbone (WIP)</option>
                 <!-- <option value="Reverse-delete algorithm">Reverse-delete algorithm (WIP)</option> -->
                 <!-- <option value="Linear MST">Linear MST (WIP)</option> -->
-                <!-- <option value="Euclidean Steiner tree">Euclidean Steiner tree (WIP)</option> -->
             </BaseSelect>
 
             <div v-if="graphType === 'Star graph'">
@@ -628,11 +682,49 @@ onBeforeUnmount(() => {
                     <option value="8">S₈</option>
                 </BaseSelect>
                 <BaseSelect v-model="starGraphMergePos" @change="onGraphChange">
+                    <option value="optimal">Optimal (Chebyshev median)</option>
                     <option value="median">Median</option>
                     <option value="average">Average</option>
                     <option value="">0, 0</option>
                     <option value="spawn">Spawn</option>
                     <option value="track">Track mouse</option>
+                </BaseSelect>
+            </div>
+
+            <div v-if="graphType === 'Spanner'">
+                <BaseSelect v-model="spannerStretch" @change="onGraphChange">
+                    <option value="1.1">t = 1.1</option>
+                    <option value="1.25">t = 1.25</option>
+                    <option value="1.5">t = 1.5</option>
+                    <option value="2">t = 2</option>
+                    <option value="3">t = 3</option>
+                </BaseSelect>
+            </div>
+
+            <div v-if="graphType === 'Backbone'">
+                <BaseSelect v-model="backboneStyle" @change="onGraphChange">
+                    <option value="hubs">Hubs (k-means)</option>
+                    <option value="grid">Fixed grid</option>
+                </BaseSelect>
+                <BaseSelect
+                    v-if="backboneStyle === 'hubs'"
+                    v-model="backboneHubs"
+                    @change="onGraphChange">
+                    <option value="2">2 hubs</option>
+                    <option value="3">3 hubs</option>
+                    <option value="4">4 hubs</option>
+                    <option value="6">6 hubs</option>
+                    <option value="8">8 hubs</option>
+                </BaseSelect>
+                <BaseSelect
+                    v-if="backboneStyle === 'grid'"
+                    v-model="backboneGrid"
+                    @change="onGraphChange">
+                    <option value="2">2 × 2 grid</option>
+                    <option value="3">3 × 3 grid</option>
+                    <option value="4">4 × 4 grid</option>
+                    <option value="6">6 × 6 grid</option>
+                    <option value="8">8 × 8 grid</option>
                 </BaseSelect>
             </div>
         </div>

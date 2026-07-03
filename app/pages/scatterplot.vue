@@ -25,16 +25,19 @@ onMounted(() => {
     window.addEventListener('resize', drawPlot)
 
     plotData.value = [
-        // { graph_name: "Current network* (not all stations connected)", length: 14590, time: 77.43 },
-        { graph_name: 'Star graph*', length: 22452, time: 48.81 },
-        { graph_name: 'Complete graph', length: 796874, time: 40.25 },
-        { graph_name: 'MST nearest neighbour', length: 12467, time: 135.04 },
-        { graph_name: 'Hamiltonian cycle', length: 14239, time: 126 },
-        { graph_name: "Prim's algorithm", length: 8895, time: 60.63 },
-        // { graph_name: "Prim's algorithm", length: 8899, time: 77.05 },
-        { graph_name: "Prim's algorithm with loop", length: 9887, time: 61.72 },
-        { graph_name: "Kruskal's algorithm", length: 8895, time: 60.63 },
-        { graph_name: 'Stainer tree', length: 8362, time: 49.21 },
+        { graph_name: 'Star graph*', length: 23628, time: 50.27 },
+        { graph_name: 'Complete graph', length: 860901, time: 41.59 },
+        { graph_name: 'MST nearest neighbour', length: 13716, time: 156.64 },
+        { graph_name: 'Hamiltonian cycle', length: 15125, time: 126.18 },
+        { graph_name: "Prim's algorithm", length: 9619, time: 62.15 },
+        { graph_name: "Kruskal's algorithm", length: 9619, time: 62.15 },
+        { graph_name: 'Stainer tree', length: 8905, time: 51.13 },
+        { graph_name: 'Greedy t-spanner (1.5)', length: 16531, time: 47.27 },
+        { graph_name: 'Yao-8 graph', length: 107008, time: 42.16 },
+        { graph_name: 'Delaunay', length: 52342, time: 44.75 },
+        { graph_name: 'Gabriel graph', length: 16844, time: 48.01 },
+        { graph_name: 'Relative neighborhood', length: 11017, time: 54.57 },
+        { graph_name: 'Hub backbone (4)', length: 19310, time: 60.45 },
     ]
 
     drawPlot()
