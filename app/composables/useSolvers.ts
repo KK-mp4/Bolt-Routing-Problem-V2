@@ -101,6 +101,12 @@ export const SOLVERS: SolverDefinition[] = [
         run: network => generateYaoGraph(network),
     },
     {
+        id: 'theta',
+        label: 'Theta-8 graph',
+        properties: ['sparse', 'locally stable', 'spanner'],
+        run: network => generateThetaGraph(network),
+    },
+    {
         id: 'delaunay',
         label: 'Delaunay',
         properties: ['sparse', 'locally stable'],
@@ -141,6 +147,33 @@ export const SOLVERS: SolverDefinition[] = [
                     )
             }
         },
+    },
+    {
+        id: 'unit-square',
+        label: 'Unit-square graph',
+        properties: ['sparse', 'locally stable', 'tunable'],
+        run: (network, settings) =>
+            generateUnitSquareGraph(
+                network,
+                Number(settings.solvers.unitSquare.radius)
+            ),
+    },
+    {
+        id: 'hnsw',
+        label: 'HNSW navigable',
+        properties: ['sparse', 'locally stable'],
+        run: (network, settings) =>
+            generateHnswGraph(network, Number(settings.solvers.hnsw.m)),
+    },
+    {
+        id: 'dynamic-spanner',
+        label: 'Dynamic t-spanner',
+        properties: ['sparse', 'locally stable', 'spanner', 'tunable'],
+        run: (network, settings) =>
+            generateDynamicSpannerGraph(
+                network,
+                Number(settings.solvers.dynamicSpanner.stretch)
+            ),
     },
 ]
 

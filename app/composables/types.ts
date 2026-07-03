@@ -56,12 +56,29 @@ export interface BackboneSettings {
     knn: number
 }
 
+export interface UnitSquareSettings {
+    // Connection radius as a multiple of the median nearest-neighbour distance.
+    radius: number
+}
+
+export interface HnswSettings {
+    // Target number of neighbours per node (M).
+    m: number
+}
+
+export interface DynamicSpannerSettings {
+    stretch: number
+}
+
 // One nested object per solver that has tunable options. Solvers without
 // options simply have no entry here.
 export interface SolverSettings {
     star: StarSettings
     spanner: SpannerSettings
     backbone: BackboneSettings
+    unitSquare: UnitSquareSettings
+    hnsw: HnswSettings
+    dynamicSpanner: DynamicSpannerSettings
 }
 
 export interface DisplaySettings {

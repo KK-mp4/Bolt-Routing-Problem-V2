@@ -23,6 +23,10 @@ When you already know where the stations will be, it comes down to [multi-object
 [Yao-8 graph](#6-yao-8-graph)
 [Proximity graphs](#7-proximity-graphs)
 [Hub backbone](#8-hub-backbone)
+[Theta-8 graph](#9-theta-8-graph)
+[Unit-square graph](#10-unit-square-graph)
+[HNSW navigable graph](#11-hnsw-navigable-graph)
+[Dynamic t-spanner](#12-dynamic-t-spanner)
 [Solver properties](#solver-properties)
 [Distance matrix heatmap](#distance-matrix-heatmap)
 [Pareto front](#pareto-front)
@@ -119,6 +123,22 @@ A future-proof network, available in three styles:
 
 The hub and grid styles depend only on their parameters (hub positions or grid divisions), so adding a new station later just attaches one more spur to the nearest existing hub or intersection, leaving the rest of the network untouched, unlike the globally optimized tree solutions that would need a full redesign. The fixed grid is the most future-proof since its trunk does not move at all as long as new stations stay inside the covered area. The kNN style skips the trunk entirely and instead keeps the network locally stable by wiring each station only to its close neighbors.
 
+### 9. Theta-8 graph
+
+The Theta-graph is a close sibling of the [Yao-8 graph](#6-yao-8-graph) and another [geometric spanner](https://en.wikipedia.org/wiki/Geometric_spanner) construction. The plane around each station is again split into 8 cones of 45° centred on the eight bolt directions, but the choice of neighbour inside a cone differs: Yao keeps the metrically nearest station, while Theta keeps the station with the smallest projection onto the cone's central axis. That projection rule yields a clean geometric spanner, and because each station's edges come only from its own cones, inserting a station mostly disturbs just its neighbourhood.
+
+### 10. Unit-square graph
+
+The Chebyshev analogue of a [unit disk graph](https://en.wikipedia.org/wiki/Unit_disk_graph). Two stations are joined whenever their Chebyshev distance is within a radius _r_; since an L∞ ball is an axis-aligned square, each station links to everyone inside its square footprint. The radius is expressed relative to the network's own spacing (a multiple of the median nearest-neighbour distance) so it adapts to any scale. A pure fixed-radius graph can leave isolated stations in sparse regions, so the edges are unioned with an MST to keep the whole network reachable. Inserting a station only wires it to those already inside its square, so the rest of the network stays untouched.
+
+### 11. HNSW navigable graph
+
+A compact take on the [Hierarchical Navigable Small World](https://en.wikipedia.org/wiki/Hierarchical_navigable_small_world) structure used by vector databases. Stations are inserted one at a time; each is assigned a random top layer drawn from a geometric distribution, so most stations live only on the dense bottom layer while a few also appear on sparser upper layers that act as express lanes. On every layer a station connects to roughly its _M_ nearest neighbours found by greedily navigating from the current entry point, and over-connected nodes are pruned back to a per-layer degree cap. The result is sparse with bounded degree, gives short _O(log n)_-style routes thanks to the upper layers, and is inherently incremental. The rendered network is the union of the connections across all layers. Microsoft's DiskANN/Vamana is a bounded-degree incremental cousin.
+
+### 12. Dynamic t-spanner
+
+An incremental version of the [greedy t-spanner](#5-greedy-t-spanner). It keeps the same guarantee (every pair routes within _t_ times its direct Chebyshev distance) but builds the network by inserting stations one at a time: when a station _p_ is added, the existing stations are scanned nearest-first and an edge _p_-_q_ is created only when the current graph cannot already route _p_ to _q_ within the allowed stretch. Unlike the global greedy spanner, only edges touching the freshly inserted station are ever considered, so each insertion is a local operation that leaves the rest of the network intact. A true [dynamic spanner](https://en.wikipedia.org/wiki/Geometric_spanner) keeps this update cost polylogarithmic; here it is kept simple since networks are small.
+
 ## Distance matrix heatmap
 
 To calculate average travel time in a given network I use [Floyd-Warshall algorithm](https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm) that generates this matrix of shortest path between any set of points.
@@ -133,12 +153,12 @@ To choose a network that best suits your needs, there is a page with scatter plo
 
 ## Future work
 
-Now that local stability is a first-class criterion, the most promising directions are structures that are sparse, keep short routes, and support incremental insertion natively. Candidates worth exploring in this Chebyshev space:
+The locally stable family above (Theta-8, unit-square, HNSW, dynamic t-spanner) is now implemented. What is left is mostly about turning "locally stable in principle" into "locally stable in the editor" and about widening the criteria:
 
-- **HNSW-like navigable graph** - a multi-layer proximity graph in the style of [Hierarchical Navigable Small World](https://en.wikipedia.org/wiki/Hierarchical_navigable_small_world) graphs. It is designed for incremental insertion in any metric space (Chebyshev qualifies), gives roughly _O(log n)_ hops (short routes), and bounds each station's degree. The main drawback is long "express" edges that create tunnel crossings. Microsoft's DiskANN/Vamana is a bounded-degree incremental cousin.
-- **Unit-square (fixed-radius) graph** - the Chebyshev analogue of a [unit disk graph](https://en.wikipedia.org/wiki/Unit_disk_graph): connect any two stations within a Chebyshev radius _r_ (an L∞ ball is a square). Naturally local and incremental, but density swings with _r_ and it can disconnect in sparse areas, so it would need an MST fallback like the kNN style.
-- **Theta-graph** - a cone-based spanner sibling of the Yao-8 graph that projects onto cone bisectors instead of taking the nearest neighbor per cone. It is a strong spanner and is built per-station, so it is incrementally friendly.
-- **Dynamic geometric spanner** - research on [dynamic spanners](https://en.wikipedia.org/wiki/Geometric_spanner) maintains a _t_-spanner under insertions with only polylogarithmic local edge changes, which is the principled way to make the existing greedy t-spanner future-proof instead of rebuilding it from scratch.
+- **True online insertion** - the incremental solvers currently still rebuild from the full station set on each run. The natural next step is to let the editor attach a single new station in place (its local edges only) without recomputing the whole network, exercising the incremental property end to end.
+- **Bounded-degree criterion** - each station can only physically host so many bolt launchers/receivers, so max degree per station is a real hardware limit worth surfacing as a fourth axis (HNSW and the cone graphs already bound it; stars and hubs concentrate it).
+- **Planarity / crossings** - bolts are physical tunnels, so edge crossings mean vertical stacking and extra redstone. Bounded-degree plane spanners would trade a little stretch for a crossing-free layout.
+- **Dynamic spanner with polylogarithmic updates** - the principled version of the dynamic t-spanner maintains the stretch guarantee under insertions with only polylog local edge changes, rather than the simple per-insertion rescan used here.
 
 ## How to use
 

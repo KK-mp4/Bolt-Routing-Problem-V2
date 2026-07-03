@@ -243,6 +243,7 @@ function updateMap() {
     const lables = svg
         .append('g')
         .attr('id', 'lables')
+        .attr('transform', 'translate(75, 0)')
         .style('font-family', 'Fira Code')
         .style('fill', '#fbdfd8')
         .style('font-size', '10px')
@@ -321,6 +322,33 @@ function updateMap() {
             middleButtonPressed = false
             svg.select('#temp-line').remove()
         }
+    })
+
+    // Ctrl + left click drops a new station at the cursor (auto-numbered, no
+    // prompt) so local stability can be tested by inserting points on the fly.
+    svg.on('click', (event: MouseEvent) => {
+        if (!event.ctrlKey || event.button !== 0) return
+
+        const svgElement = svg.node()
+        if (!svgElement) return
+
+        const svgPoint = svgElement.createSVGPoint()
+        svgPoint.x = event.offsetX
+        svgPoint.y = event.offsetY
+        const screenCTM = svgElement.getScreenCTM()
+        if (!screenCTM) return
+        const cursor = svgPoint.matrixTransform(screenCTM.inverse())
+
+        // Invert through the current zoom transform so the station lands under
+        // the cursor at any zoom level.
+        const dataX = Math.round(
+            savedTransform.rescaleX(xScale).invert(cursor.x - margin.left)
+        )
+        const dataZ = Math.round(
+            savedTransform.rescaleY(yScale).invert(cursor.y - margin.top)
+        )
+
+        addStation(dataX, dataZ)
     })
 
     function zoom(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
@@ -460,6 +488,33 @@ function updateMap() {
             .style('stroke-width', 2)
             .style('stroke-dasharray', '5 5')
     }
+}
+
+// Next auto-incrementing numeric station name (max existing number + 1), so
+// deleting and re-adding never reuses a label during local-stability testing.
+function nextStationName(): string {
+    let max = 0
+    for (const station of network.value.stations) {
+        const value = Number(station.name)
+        if (Number.isFinite(value) && value > max) max = value
+    }
+    return String(max + 1)
+}
+
+// Adds a bare station at the given world coordinates and re-runs the active
+// solver so the network updates around the new point.
+function addStation(x: number, z: number) {
+    const name = nextStationName()
+    network.value.stations.push({
+        id: makeId(),
+        name,
+        description: '',
+        colour: '#f2a788',
+        x,
+        z,
+    })
+    userMsg.value = `Added station ${name} { X: ${x} , Z: ${z} }`
+    onGraphChange()
 }
 
 async function onGraphChange() {
@@ -619,6 +674,40 @@ onBeforeUnmount(() => {
                     <option :value="6">k = 6</option>
                 </BaseSelect>
             </div>
+
+            <div v-if="settings.activeSolver === 'unit-square'">
+                <BaseSelect
+                    v-model="settings.solvers.unitSquare.radius"
+                    @change="onGraphChange">
+                    <option :value="1.5">r = 1.5× spacing</option>
+                    <option :value="2">r = 2× spacing</option>
+                    <option :value="3">r = 3× spacing</option>
+                    <option :value="4">r = 4× spacing</option>
+                </BaseSelect>
+            </div>
+
+            <div v-if="settings.activeSolver === 'hnsw'">
+                <BaseSelect
+                    v-model="settings.solvers.hnsw.m"
+                    @change="onGraphChange">
+                    <option :value="3">M = 3</option>
+                    <option :value="4">M = 4</option>
+                    <option :value="6">M = 6</option>
+                    <option :value="8">M = 8</option>
+                </BaseSelect>
+            </div>
+
+            <div v-if="settings.activeSolver === 'dynamic-spanner'">
+                <BaseSelect
+                    v-model="settings.solvers.dynamicSpanner.stretch"
+                    @change="onGraphChange">
+                    <option :value="1.1">t = 1.1</option>
+                    <option :value="1.25">t = 1.25</option>
+                    <option :value="1.5">t = 1.5</option>
+                    <option :value="2">t = 2</option>
+                    <option :value="3">t = 3</option>
+                </BaseSelect>
+            </div>
         </div>
 
         <div class="fixed left-0 top-0 p-5 pb-1 backdrop-blur">
@@ -664,7 +753,10 @@ onBeforeUnmount(() => {
 
         <div
             class="invisible fixed bottom-0 right-0 select-none text-[10px] md:visible">
-            <p>pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3</p>
+            <p>
+                pan: drag mouse1 / zoom: scroll mouse3 / connect: drag mouse3 /
+                add station: ctrl + mouse1
+            </p>
         </div>
 
         <div id="network_map" class="h-full w-full p-0" />

@@ -49,6 +49,9 @@ function defaultSettings(): AppSettings {
             star: { rayCount: 8, mergeAt: 'median' },
             spanner: { stretch: 1.5 },
             backbone: { style: 'hubs', hubs: 4, grid: 4, knn: 3 },
+            unitSquare: { radius: 2 },
+            hnsw: { m: 4 },
+            dynamicSpanner: { stretch: 1.5 },
         },
     }
 }
@@ -151,6 +154,12 @@ export function normalizeSettings(raw: unknown): AppSettings {
     const star = (solvers.star ?? {}) as Record<string, unknown>
     const spanner = (solvers.spanner ?? {}) as Record<string, unknown>
     const backbone = (solvers.backbone ?? {}) as Record<string, unknown>
+    const unitSquare = (solvers.unitSquare ?? {}) as Record<string, unknown>
+    const hnsw = (solvers.hnsw ?? {}) as Record<string, unknown>
+    const dynamicSpanner = (solvers.dynamicSpanner ?? {}) as Record<
+        string,
+        unknown
+    >
 
     return {
         version: SETTINGS_VERSION,
@@ -176,6 +185,21 @@ export function normalizeSettings(raw: unknown): AppSettings {
                 hubs: toNumber(backbone.hubs, d.solvers.backbone.hubs),
                 grid: toNumber(backbone.grid, d.solvers.backbone.grid),
                 knn: toNumber(backbone.knn, d.solvers.backbone.knn),
+            },
+            unitSquare: {
+                radius: toNumber(
+                    unitSquare.radius,
+                    d.solvers.unitSquare.radius
+                ),
+            },
+            hnsw: {
+                m: toNumber(hnsw.m, d.solvers.hnsw.m),
+            },
+            dynamicSpanner: {
+                stretch: toNumber(
+                    dynamicSpanner.stretch,
+                    d.solvers.dynamicSpanner.stretch
+                ),
             },
         },
     }
